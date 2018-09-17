@@ -3,3 +3,5 @@
 /custom.el
 /elpa
 /var
+*.elc
+etc/

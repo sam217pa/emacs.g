@@ -100,6 +100,7 @@
 (use-package magit
   :defer t
   :bind (("C-x g"   . magit-status)
+         ("s-v"     . magit-status)
          ("C-x M-g" . magit-dispatch-popup))
   :config
   (magit-add-section-hook 'magit-status-sections-hook
@@ -122,7 +123,8 @@
 
 (use-package recentf
   :demand t
-  :config (add-to-list 'recentf-exclude "^/\\(?:ssh\\|su\\|sudo\\)?:"))
+  :config
+  (add-to-list 'recentf-exclude "^/\\(?:ssh\\|su\\|sudo\\)?:"))
 
 (use-package savehist
   :config (savehist-mode))
