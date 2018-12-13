@@ -137,7 +137,8 @@
   :config (column-number-mode))
 
 (progn ;    `text-mode'
-  (add-hook 'text-mode-hook #'indicate-buffer-boundaries-left))
+  (add-hook 'text-mode-hook #'indicate-buffer-boundaries-left)
+  (add-hook 'text-mode-hook #'turn-on-auto-fill))
 
 (use-package tramp
   :defer t
@@ -169,3 +170,4 @@
 ;; indent-tabs-mode: nil
 ;; End:
 ;;; init.el ends here
+(put 'downcase-region 'disabled nil)

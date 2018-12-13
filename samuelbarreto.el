@@ -1,12 +1,4 @@
 ;;; Defaults
-(defmacro add-hook! (hook &rest body)
-  "Nicer add-hooking that prevents writing lambdas explicitely.
-
-Add a lamdba containing BODY to hook HOOK."
-  (declare (indent 1))
-  `(add-hook ,hook
-             (lambda () ,@body)))
-
 
 (use-package no-littering
   :commands (no-littering-expand-var-file-name
@@ -15,191 +7,15 @@ Add a lamdba containing BODY to hook HOOK."
   (add-to-list 'recentf-exclude no-littering-var-directory)
   (add-to-list 'recentf-exclude no-littering-etc-directory))
 
-(defun sam-keyboard! ()
-  "Defines the default keyboard behavior on darwin."
-  (when (eq system-type 'darwin)
-    (setq
-     ;; cmd de droite = meta
-     mac-right-command-modifier 'meta
-     ;; cmd de gauche = control
-     mac-command-modifier 'control
-     ;; option de gauche = super
-     mac-option-modifier 'super
-     ;; option de droite = carac spéciaux
-     mac-right-option-modifier nil
-     ;; control de gauche = hyper (so does capslock)
-     mac-control-modifier 'hyper
-     ;; fn key = hyper
-     ns-function-modifier 'hyper
-     ;; cette touche n'existe p
-     ns-right-alternate-modifier nil)
-    ))
 
-(defun sam-darwin-defaults! ()
-  "Set the default behavior with respect to a macosx environment."
-  ;; disable system call to commands like C-h (hide frame on macOS by default)
-  (setq mac-pass-command-to-system nil)
-  ;; idem
-  (setq mac-pass-control-to-system nil)
-  (setq-default locate-command "mdfind")
-  (setq-default cursor-type 'box)
-
-  (setq delete-by-moving-to-trash t))
-
-(defun system-move-file-to-trash (file)
-    "Use \"trash\" to move FILE to the system trash.
-When using Homebrew, install it using \"brew install trash\"."
-    (call-process (executable-find "trash") nil nil nil file))
-
-(defun sam-environment! ()
-  (setenv "LANG" "en_US.UTF-8")
-  (setenv "LC_ALL" "en_US.UTF-8"))
-
-(defun sam-defaults! ()
-  (setq
-   ;; use-package décrit les appels qu'il fait
-   use-package-verbose nil
-   ;; supprime les vieilles versions des fichiers sauvegardés
-   delete-old-versions -1
-   ;; enable le version control
-   version-control t
-   ;; backups file even when under vc
-   vc-make-backup-files t
-   ;; vc suit les liens  symboliques
-   vc-follow-symlinks t
-   ;; supprime l'écran d'accueil
-   inhibit-startup-screen t
-   ;; supprime cette putain de cloche.
-   ring-bell-function 'ignore
-   ;; sentences does not end with double space.
-   sentence-end-double-space nil
-   default-fill-column 72
-   initial-scratch-message ""
-   save-interprogram-paste-before-kill t
-   ;; focus help window when opened
-   help-window-select t
-   ;; tab are 4 spaces large
-   tab-width 4
-   auto-window-vscroll nil)
-
-  ;; transforme les noms des fichiers sauvegardés
-   (setq auto-save-file-name-transforms
-         `((".*" ,(no-littering-expand-var-file-name "auto-save/") t)))
-
-  ;; store all backup and autosave files in the tmp dir
-  (setq backup-directory-alist
-	`((".*" . ,(no-littering-expand-var-file-name "backups/"))))
-
-  ;; store custom in etc
-  (setq custom-file (no-littering-expand-etc-file-name "custom.el"))
-
-  (setq-default indent-tabs-mode nil
-		        tab-width 4)
-
-  (setq epg-gpg-program "gpg2")
-
-  ;; utf-8 est le systeme par défaut.
-  (prefer-coding-system 'utf-8)
-
-  ;; remplace yes no par y n
-  (defalias 'yes-or-no-p 'y-or-n-p)
-  (defalias 'kill-frame #'delete-frame)
-  (show-paren-mode)
-  ;; display line number in mode line
-  (line-number-mode -1)
-  ;; display colum number in mode line
-  (column-number-mode -1)
-  (save-place-mode)
-  ;; replace highlighted text with type
-  (delete-selection-mode 1)
-
-  (setq initial-major-mode 'fundamental-mode)
-
-  ;; supprime les caractères en trop en sauvegardant.
-  (add-hook! 'before-save-hook
-    (delete-trailing-whitespace))
-
-  ;; rend les scripts executable par défault si c'est un script.
-  (add-hook! 'after-save-hook
-    (executable-make-buffer-file-executable-if-script-p)))
-
-(defvar my-font-for-light "DejaVu Sans Mono 11"
-    "Font for coding situations.")
-
-(defun sam-appearances! ()
-  "Set the default theme and fonts"
-  (load-theme 'leuven t)
-
-  (when window-system
-    ;; increase space between lines
-    (setq-default line-spacing 6)
-
-    ;; change default font for current frame
-    (add-to-list 'default-frame-alist `(font . ,my-font-for-light))
-    (set-face-attribute 'default nil :font my-font-for-light)))
-
-(defun sam--initialize-frame! ()
-  "Set the default dimension and position of a new frame."
-  (let* ((a-width (* (display-pixel-width) 0.50))
-         (a-height (* (display-pixel-height) 0.60))
-         (a-left (truncate (/ (- (display-pixel-width) a-width) 2)))
-         (a-top (truncate (/ (- (display-pixel-height) a-height) 2))))
-
-    (set-frame-position (selected-frame) a-left a-top)
-    (set-frame-size (selected-frame)
-                    (truncate a-width)
-                    (truncate a-height)
-                    t )))
-
-
-(defun sam--windows! ()
-  "Set the default behavior for windows and splitting buffers."
-  (defvar sam--parameters
-    '(window-parameters . ((no-other-window . t)
-                           (no-delete-other-windows . t))))
-
-  (setq fit-window-to-buffer-horizontally t)
-  (setq window-resize-pixelwise t)
-  (setq frame-resize-pixelwise t)
-
-  (setq display-buffer-alist
-        `(("\\*Buffer List\\*" display-buffer-in-side-window
-           (side . top)
-           (slot . -1)
-           (window-height . 20)
-           (preserve-size . (nil . t)) ,sam--parameters)
-          ("\\*Tags List\\*" display-buffer-in-side-window
-           (side . right)
-           (slot . 1)
-           (window-width . fit-window-to-buffer)
-           (preserve-size . (t . nil)) ,sam--parameters)
-          ("\\*\\(?:help\\|grep\\|Completions\\)\\*"
-           display-buffer-in-side-window
-           (side . bottom)
-           (slot . -1)
-           (preserve-size . (nil . t))
-           ,sam--parameters)
-          ("\\*\\(?:shell\\|compilation\\)\\*" display-buffer-in-side-window
-           (side . bottom)
-           (slot . 1)
-           (preserve-size . (nil . t))
-           ,sam--parameters)
-          ("\\*Org Select\\*" display-buffer-in-side-window
-           (side . top)
-           (slot . -1)
-           (window-width . fit-window-to-buffer)
-           (preserve-size . (t . nil))
-           ,sam--parameters))))
-
-(add-hook! 'after-init-hook
-  (sam--initialize-frame!)
-  (sam--windows!)
-  (sam-appearances!)
-  (sam-environment!)
-  (sam-defaults!)
-  (sam-keyboard!)
-  (sam-darwin-defaults!))
-
+(use-package sam-defaults
+  :load-path "~/.emacs.d/lisp/"
+  :commands (sam-initialize!)
+  :custom
+  (sam-font "CMU Typewriter Text 15")
+  (sam-theme 'zenburn)
+  :init
+  (sam-initialize!))
 
 ;;; Packages
 
@@ -214,6 +30,8 @@ When using Homebrew, install it using \"brew install trash\"."
 
 (use-package ace-window
   :bind* (("M-é" . ace-window))
+  :custom
+  (aw-scope 'frame)
   :config
   (setq aw-keys '(?t ?s ?r ?n ?m ?a ?u ?i ?e))
   (setq aw-background t)
@@ -232,13 +50,6 @@ When using Homebrew, install it using \"brew install trash\"."
       (when (eq major-mode 'compilation-mode)
         (ansi-color-apply-on-region compilation-filter-start (point-max))))
     (add-hook 'compilation-filter-hook 'my-colorize-compilation-buffer)))
-
-
-(use-package auto-fill-mode
-  :diminish auto-fill-function
-  :commands turn-on-auto-fill
-  :init
-  (add-hook 'text-mode-hook 'turn-on-auto-fill))
 
 
 (use-package avy
@@ -268,6 +79,15 @@ When using Homebrew, install it using \"brew install trash\"."
               ([S-tab] . bicycle-cycle-global)))
 
 
+(use-package buff-menu
+  :bind* (("C-x b" . list-buffers)
+          :map Buffer-menu-mode-map
+          ("RET" . Buffer-menu-other-window))
+  :config
+  (add-hook! 'Buffer-menu-mode-hook
+    (Buffer-menu-toggle-files-only 1)))
+
+
 (use-package comment-dwim-2
   :bind* ("M-;" . comment-dwim-2))
 
@@ -287,9 +107,12 @@ When using Homebrew, install it using \"brew install trash\"."
          ("\\.toml\\'" . conf-toml-mode)))
 
 
+
+
 (use-package counsel
   :commands (counsel-load-theme
-             counsel-bookmark)
+             counsel-bookmark
+             counsel-yank-pop)
   :bind* (("C-c i" . counsel-imenu)
           ("C-x C-f" . counsel-find-file)
           ("C-c C-/" . counsel-rg)
@@ -310,6 +133,21 @@ When using Homebrew, install it using \"brew install trash\"."
               (font-family-list)
               :caller 'counsel-font
               :action (lambda (x) (set-frame-font x)))))
+
+
+(use-package counsel-projectile
+  :commands (counsel-projectile-mode)
+  :bind* (("H-p" . counsel-projectile-switch-project)
+          ("s-f" . counsel-projectile-find-file)))
+
+
+(use-package cwl-mode
+  :mode ("\\.cwl\\'" . cwl-mode))
+
+
+(use-package debian-control-mode
+  :load-path "/Users/samuelbarreto/dotfile/emacs/private/dcf/"
+  :mode (("DESCRIPTION" . debian-control-mode)))
 
 
 (use-package dired
@@ -338,7 +176,7 @@ When using Homebrew, install it using \"brew install trash\"."
       (display-buffer-in-side-window
        buffer  `((side          . left)
                  (slot          . 0)
-                 (window-width  . fit-window-to-buffer)
+                 (window-width  . 20)
                  (preserve-size . (t . nil)) ,sam--parameters))))
 
   (let ((gls "/usr/local/bin/gls"))
@@ -377,17 +215,27 @@ When using Homebrew, install it using \"brew install trash\"."
     (mkdir (format "%s.%s" dir-name (format-time-string "%Y%m%d" (current-time))))
     (revert-buffer))
 
-  (bind-keys :map dired-mode-map
-    ("SPC" . dired-view-other-window)
-    ("t"   . dired-next-line)
-    ("s"   . dired-previous-line)
-    ("r"   . dired-find-file)
-    ("c"   . dired-up-directory)
-    ("8"   . dired-mkdir-date)
-    ("9"   . dired-mkdir-date-rstyle)
-    ("O"   . sam|open-in-external-app)
-    ("C-'" . shell)
-    ("q"   . (lambda () (interactive) (quit-window 4)))))
+  (defun dired-mktemp ()
+    (interactive)
+    (mkdir (format ".tmp-%s" (format-time-string "%F-%H%M%S")))
+    (revert-buffer)
+    (dired-omit-mode -1))
+
+  (bind-keys
+   :map dired-mode-map
+   ("SPC" . dired-view-other-window)
+   ("C-+" . dired-mktemp)
+   ("H"   . dired-omit-mode)
+   ("h"   . dired-omit-mode)
+   ("t"   . dired-next-line)
+   ("s"   . dired-previous-line)
+   ("r"   . dired-find-file)
+   ("c"   . dired-up-directory)
+   ("8"   . dired-mkdir-date)
+   ("9"   . dired-mkdir-date-rstyle)
+   ("O"   . sam|open-in-external-app)
+   ("C-'" . shell)
+   ("q"   . (lambda () (interactive) (quit-window 4)))))
 
 (use-package dired-x
   :after dired
@@ -406,6 +254,7 @@ When using Homebrew, install it using \"brew install trash\"."
                                  "\\|^\\..*$\\|^.DS_Store$\\|^.projectile$\\|^.git$")))
 
 
+
 (use-package elfeed-org
     :commands (elfeed-org)
     :init
@@ -414,18 +263,20 @@ When using Homebrew, install it using \"brew install trash\"."
     (elfeed-org))
 
 (use-package elfeed
-  :requires elfeed-org
   :functions (elfeed-next-tag
+              elfeed-mark-all-as-read
               counsel-elfeed--update-tag)
   :commands (elfeed-update-filter
-	     elfeed-search-update
-	     elfeed-search-set-filter)
+	         elfeed-search-update
+	         elfeed-search-set-filter)
   :bind* (("<f6>" . elfeed)
           ("C-c E" . elfeed)
           :map elfeed-search-mode-map
           ("N" . elfeed-next-tag)
+          ("R" . elfeed-mark-all-as-read)
           ("U" . elfeed-search-fetch))
   :config
+  (elfeed-org)
   ;; increase title width to accomodate papers
   (setq elfeed-search-title-max-width 120)
 
@@ -448,6 +299,11 @@ When using Homebrew, install it using \"brew install trash\"."
     (setf elfeed-search-filter
           (concat "@6-months-ago +unread " x))
     (elfeed-search-update :force))
+
+  (defun elfeed-mark-all-as-read ()
+    (interactive)
+    (mark-whole-buffer)
+    (elfeed-search-untag-all-unread))
 
   (defun elfeed-next-tag ()
     (interactive)
@@ -492,12 +348,80 @@ When using Homebrew, install it using \"brew install trash\"."
 
 
 (use-package elisp-mode
+  :functions (use-package-jump)
   :bind (:map emacs-lisp-mode-map
-              ("ê u" . use-package-jump)))
+              ("A-j" . use-package-jump))
+  :config
+  (defun use-package-jump--list-calls ()
+    (let ((packages))
+      (save-excursion
+        (goto-char (point-max))
+        (while (beginning-of-defun)
+          (let ((line (buffer-substring (line-beginning-position) (line-end-position))))
+            (when (string-match "^(use-package \\([^[:space:]\n]+\\)" line)
+              (push (cons (match-string-no-properties 1 line) (point))
+                    packages)))))
+      packages))
 
 
-(use-package ess-site
-  :mode ("\\.R\\'" . R-mode))
+  (defun use-package-jump ()
+    "Jump to an outer-level `use-package' definition in current buffer."
+    (interactive)
+    (let ((packages (use-package-jump--list-calls)))
+      (goto-char (cdr (assoc (ivy-completing-read "Package: " packages)
+                             packages))))))
+
+
+(use-package ess
+  :mode ("\\.R\\'" . ess-r-mode)
+  :custom
+  (ess-eval-visibly nil)
+  (ess-offset-continued 2)
+  (ess-expression-offset 2)
+  (ess-nuke-trailing-whitespace-p t)
+  (ess-default-style 'RStudio)
+  (ess-help-reuse-window t)
+  (ess-use-ido nil)
+  (ess-R-font-lock-keywords '((ess-R-fl-keyword:keywords . t)
+                              (ess-R-fl-keyword:constants . t)
+                              (ess-R-fl-keyword:modifiers . t)
+                              (ess-R-fl-keyword:fun-defs . t)
+                              (ess-R-fl-keyword:assign-ops . t)
+                              (ess-fl-keyword:fun-calls . t)
+                              (ess-fl-keyword:numbers . t)
+                              (ess-fl-keyword:operators . t)
+                              (ess-fl-keyword:delimiters . t)
+                              (ess-fl-keyword:= . t)
+                              (ess-R-fl-keyword:F&T . t)
+                              (ess-R-fl-keyword:%op% . t)))
+  :bind* (:map ess-mode-map
+               ("RET" . ess-newline-and-indent)
+               ("S-<return>" . ess-eval-line)
+               ("C-RET" . ess-eval-region-or-line)
+               ("M-RET" . ess-eval-function-or-paragraph)
+               ("C-c M-s" . ess-switch-process)
+               ("_" . self-insert-command)
+               (" " . ess-insert-assign)
+               (" " . ess-insert-assign))
+  :config
+  (add-hook! 'ess-mode-hook
+    (setq-local outline-regexp "^## \\*"))
+
+  (sp-local-pair
+   'ess-mode "{" nil
+   :post-handlers '((sam--create-newline-and-enter-sexp "RET")))
+  (sp-local-pair
+   'ess-mode "(" nil
+   :post-handlers '((sam--create-newline-and-enter-sexp "RET")))
+  (sp-local-pair 'ess-mode "%" "%")
+  (sp-local-pair 'ess-mode "`" "`" :actions '(wrap insert) :when '(sp-in-comment-p))
+
+  (defalias 'ess-set-width 'ess-execute-screen-options))
+
+
+(use-package ess-inf
+  :bind (:map inferior-ess-mode-map
+         ("_" . self-insert-command)))
 
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns))
@@ -541,7 +465,19 @@ Totos   : _C-n_: next / _C-p_: prev / _C-s_: search"
 
 
 (use-package flyspell
-  :bind* (("C-c M-f" . flyspell-buffer)))
+  :bind* (("C-c M-f" . flyspell-buffer)
+          :map flyspell-mode-map
+          ("C-c M-n" . flyspell-goto-next-error)))
+
+
+(use-package flx)
+
+
+(use-package geiser-install
+  :hook (scheme-mode . geiser-mode)
+  :custom
+  (geiser-active-implementation '(guile chez))
+  (geiser-scheme-dir "~/.emacs.d/lib/geiser/scheme"))
 
 
 (use-package ggo-mode
@@ -573,16 +509,41 @@ Totos   : _C-n_: next / _C-p_: prev / _C-s_: search"
       (org-make-link-string link page))))
 
 
+(use-package green-screen-theme
+  :defer t)
+
+
+(use-package hideshow
+  :bind* (("s-h" . hs-toggle-hiding)))
+
+
+(use-package hippie-exp
+  :bind* (("M-/" . hippie-expand))
+  :custom
+  (hippie-expand-try-functions-list
+   '(try-expand-dabbrev
+     try-expand-dabbrev-all-buffers
+     try-expand-dabbrev-from-kill
+     try-complete-file-name-partially
+     try-complete-file-name
+     try-expand-all-abbrevs
+     try-expand-list
+     try-expand-line
+     try-complete-lisp-symbol-partially
+     try-complete-lisp-symbol)))
+
+
 (use-package hl-todo
-  :hook (prog-mode . hl-todo-mode)
+  :hook ((prog-mode . hl-todo-mode)
+         (TeX-mode  . hl-todo-mode))
   :commands (hl-todo-previous
              hl-todo-next
              hl-todo-occur))
 
 
 (use-package hungry-delete
-  :demand t
-  :commands (global-hungry-delete-mode)
+  :commands (global-hungry-delete-mode
+             hungry-delete-mode)
   :init
   (global-hungry-delete-mode))
 
@@ -594,14 +555,25 @@ Totos   : _C-n_: next / _C-p_: prev / _C-s_: search"
 (use-package hydra
   :demand t
   :commands (defhydra
-               hydra-default-pre
-               hydra-keyboard-quit
-               hydra--call-interactively-remap-maybe
-               hydra-show-hint
-               hydra-set-transient-map))
+              hydra-default-pre
+              hydra-keyboard-quit
+              hydra--call-interactively-remap-maybe
+              hydra-show-hint
+              hydra-set-transient-map)
+  :functions (hydra-yank-pop/yank
+              hydra-yank-pop/yank-pop)
+  :config
+  (defhydra hydra-yank-pop (:hint nil)
+    "yank"
+    ("C-y" yank nil)
+    ("M-y" yank-pop nil)
+    ("y" (yank-pop 1) "next")
+    ("p" (yank-pop 1) "next")
+    ("n" (yank-pop -1) "prev")
+    ("l" counsel-yank-pop "list" :color blue)))
 
 (use-package ibuffer
-  :bind* (("C-x b" . ibuffer))
+  :bind* (("C-x C-b" . ibuffer))
   :defines (ibuffer-show-empty-filter-groups)
   :commands (ibuffer
              ibuffer-switch-to-saved-filter-groups
@@ -611,7 +583,6 @@ Totos   : _C-n_: next / _C-p_: prev / _C-s_: search"
   :config
   (add-hook! 'ibuffer-hook
     (ibuffer-switch-to-saved-filter-groups "Default"))
-
 
   (bind-keys
    :map ibuffer-mode-map
@@ -645,8 +616,8 @@ Totos   : _C-n_: next / _C-p_: prev / _C-s_: search"
   (setq-default ibuffer-saved-filter-groups
                 `(("Default"
                    ("RStat" (or (mode . ess-mode)
-                                (mode . ess-help-mode)
-                                (mode . inferior-ess-mode)))
+                                (mode . inferior-ess-mode)
+                                (mode . Rd-mode)))
                    ("C / C++" (mode . c-mode))
                    ("Org" (mode . org-mode))
                    ("Markdown" (mode . markdown-mode))
@@ -670,10 +641,6 @@ Totos   : _C-n_: next / _C-p_: prev / _C-s_: search"
 
 (use-package iedit
   :bind* (("C-*" . iedit-mode)))
-
-
-(use-package imake
-  :commands (imake))
 
 
 (use-package isearch
@@ -752,35 +719,16 @@ abort completely with `C-g'."
 
 (use-package ivy
   :diminish ""
-  :commands (ivy-mode
-             ivy-read
-             ivy-completing-read)
-  :defines (use-package-jump)
-  :bind* (("C-x C-b" . ivy-switch-buffer)
-	      ("s-t" . ivy-switch-buffer)
-	      ("s-<backspace>" . ivy-switch-buffer))
+  :bind* (("s-t" . ivy-switch-buffer)
+          ("s-<backspace>" . ivy-switch-buffer)
+          :map ivy-mode-map
+          ("C-'" . ivy-avy))
   :custom
   (ivy-display-style 'fancy)
   (ivy-count-format "(%d/%d) ")
   (ivy-use-virtual-buffers t)
   :config
-  (ivy-mode 1)
-  (setq ivy-display-function nil)
-
-  (defun use-package-jump ()
-    "Jump to an outer-level `use-package' definition in current buffer."
-    (interactive)
-    (let ((packages (use-package-jump--list-calls)))
-      (goto-char (cdr (assoc (ivy-completing-read "Package: " packages)
-                             packages)))))
-
-
-  (defun sam|genome-accession-numbers ()
-    (interactive)
-    (let* ((accessions '(("NC_005966.1" "Acinetobacter baylyi ADP1")))
-           (cols (sam--completion-collection accessions)))
-      (ivy-read "Chose genome ?" cols
-                :action (lambda (_) (insert (sam--completion-collection-out _)))))))
+  (ivy-mode 1))
 
 
 (use-package ivy-bibtex
@@ -812,20 +760,65 @@ abort completely with `C-g'."
   :commands (key-chord-mode)
   :init
   (key-chord-mode 1)
-  (setq key-chord-two-key-delay 0.2))
+  (setq key-chord-two-key-delay 0.2)
+  (key-chord-define-global "xq" #'god-local-mode))
+
+
+(use-package keyfreq
+  :commands (keyfreq-mode)
+  :config
+  (keyfreq-autosave-mode 1))
 
 
 (use-package key-seq
   :after key-chord
   :commands (key-seq-define-global)
   :init
-  (key-seq-define-global "qd" #'kill-this-buffer))
+  (key-seq-define-global "qd" #'sam-ktb)
+  (key-seq-define-global "qb" #'counsel-bookmark)
+  (key-seq-define-global "qf" #'kill-frame)
+  (key-seq-define-global "qw" #'kill-window)
+  (key-seq-define emacs-lisp-mode-map "$u" #'use-package-jump))
 
 
 (use-package lorem-ipsum
   :commands (lorem-ipsum-insert-list
              lorem-ipsum-insert-sentences
              lorem-ipsum-insert-paragraphs))
+
+
+(use-package lesspy
+  :hook (ess-mode . lesspy-mode)
+  :bind (:map lesspy-mode-map
+         ("a" . lesspy-avy-jump)
+         ("p" . lesspy-eval-function-or-paragraph)
+         ("h" . lesspy-help)
+         ("l" . lesspy-eval-line)
+         ("L" . lesspy-eval-line-and-go)
+         ("e" . lesspy-eval-sexp)
+         ("E" . lesspy-avy-eval)
+         ("c" . lesspy-left)
+         ("t" . lesspy-down)
+         ("s" . lesspy-up)
+         ("r" . lesspy-right)
+         ("d" . lesspy-different)
+         ("m" . lesspy-mark)
+         ("x" . lesspy-execute)
+         ("u" . lesspy-undo)
+         ("z" . lesspy-to-shell)
+         ("(" . lesspy-paren)
+         ("»" . lesspy-forward-slurp)
+         ("«" . lesspy-backward-slurp)
+         ("#" . lesspy-comment)
+         ("'" . lesspy-roxigen)
+         ("C" . lesspy-cleanup-pipeline)
+         ("C-d" . lesspy-kill-forward)
+         ("C-(" . lesspy-paren-wrap-next)
+         ("DEL" . lesspy-kill-backward)))
+
+
+(use-package lua-mode
+  :mode ("\\.lua\\'" . lua-mode))
 
 
 (use-package magit-gitflow
@@ -846,13 +839,150 @@ abort completely with `C-g'."
   (magit-todos-mode))
 
 
+(use-package make-mode
+  :functions (sam-makefile-info
+              sam-makefile-document)
+  :commands (makefile-bsdmake-mode
+             makefile-gmake-mode)
+  :init
+  (add-hook! 'makefile-bsdmake-mode-hook
+    (makefile-gmake-mode))
+  :config
+
+  (defun sam-makefile--search-vars (buf)
+    (with-current-buffer buf
+      (let ((vars '()))
+        (mapc
+         (lambda (s)
+           (save-excursion
+             (goto-char 0)
+             (while (search-forward s nil t)
+               (setq vars
+                     (append vars
+                             `(,(buffer-substring-no-properties (point-at-bol)
+                                                                (- (point) 4))))))))
+         '(" := " " ?= "))
+        vars)))
+
+
+  (defun sam-makefile-info ()
+    (interactive)
+    (when (eq major-mode 'makefile-gmake-mode)
+      (let ((vars (sam-makefile--search-vars (current-buffer))))
+        (insert ".PHONY: info\ninfo:")
+        (cl-loop for var in vars do
+                 (insert (format "\n\t@echo %s: $(%s)" var var)))
+        (insert "\n"))))
+
+  (defun sam-makefile-document ()
+    (interactive)
+    (require 'make-mode)
+    (progn
+      (makefile-pickup-targets)
+      (let*
+          ((targets makefile-target-table)
+           (excluded-targets '(".PHONY" ".PRECIOUS"))
+           (targets
+            (seq-filter
+             (lambda (x) (not (or (cl-member (car x) excluded-targets :test 'string-equal)
+                             (string-match "%" (car x)))))
+             targets)))
+        (insert "\n.PHONY: help\nhelp:\n")
+        (seq-map
+         (lambda (x) (insert (format "\t$(info make %s -- )\n" (car x))))
+         targets)))))
+
 (use-package markdown-mode
-  :mode ("\\.md\\'" . markdown-mode))
+  :mode ("\\.md\\'" . markdown-mode)
+  :init
+  (add-hook! 'markdown-mode-hook
+    (visual-fill-column-mode +1)
+    (auto-fill-mode -1)))
 
 
 (use-package minions
-  :hook (after-init . minions-mode)
-  :commands (minions-mode))
+  :hook (after-init . minions-mode))
+
+
+(use-package mu4e
+  :load-path "/usr/local/share/emacs/site-lisp/mu4e/"
+  :bind* (("<f5>" . mu4e)
+          :map mu4e-main-mode-map
+          ("n" . next-line)
+          ("p" . previous-line)
+          :map mu4e-compose-mode-map
+          ("M-q" . nil)
+          :map mu4e-headers-mode-map
+          ("s-c" . mu4e-headers-query-prev)
+          ("s-r" . mu4e-headers-query-next))
+  :custom
+  (mu4e-mu-binary "/usr/local/bin/mu")
+  (mu4e-html2text-command "textutil -stdin -format html -convert txt -stdout")
+  (mu4e-maildir "~/Maildir/")
+  (mu4e-drafts-folder "/drafts")
+  (mu4e-sent-folder "/sent")
+  (mu4e-trash-folder "/trash")
+  (mu4e-get-mail-command "mbsync -a")
+  (mu4e-headers-auto-update t)
+  (mu4e-use-fancy-chars nil)
+  (mu4e-confirm-quit nil)
+  (mu4e-compose-format-flowed nil)
+  (mu4e-compose-dont-reply-to-self t)
+  (mu4e-attachment-dir "~/Downloads")
+  (mu4e-user-mail-address-list '("samuel.barreto8@gmail.com"
+                                 "samuel.barreto@univ-lyon1.fr"))
+  (mu4e-maildir-shortcuts '(("/gmail/inbox" . ?i)
+                            ("/univ/inbox"  . ?u)
+                            ("/sent"        . ?s)
+                            ("/trash"       . ?t)
+                            ("/drafts"      . ?d)))
+  (mu4e-bookmarks `(("date:today..now AND NOT flag:trashed" "Today" ,?t)
+                    ("flag:unread AND NOT flag:trashed" "Unread" ,?s)
+                    ("date:7d..now AND NOT flag:trashed" "Week" ,?r)
+                    ("maildir:/univ/inbox" "Univ" ,?n)
+                    ("maildir:/gmail/inbox" "Gmail" ,?m)))
+  (mu4e-compose-reply-to-address "samuel.barreto8@gmail.com")
+  (mu4e-view-show-images t)
+
+  :init
+  (add-hook! 'message-mode-hook
+    (turn-on-orgtbl))
+
+  :config
+  ;; use mu4e as emacs default mail program
+  (setq user-mail-address "samuel.barreto8@gmail.com"
+        user-full-name "Samuel Barreto")
+
+  ;; use imagemagick, if available
+  (when (fboundp 'imagemagick-register-types)
+    (imagemagick-register-types))
+
+  ;; view mail in browser if possible
+  (add-to-list
+   'mu4e-view-actions
+   '("browser" . mu4e-action-view-in-browser) t))
+
+(use-package message
+  :after mu4e
+  :custom
+  (message-send-mail-function 'message-send-mail-with-sendmail)
+  ;; tell msmtp to choose the smtp server according to the from field
+  (message-send-mail-extra-arguments '("--read-envelope-from"))
+  (message-sendmail-f-is-evil 't)
+  :hook
+  (message-mode . turn-on-orgtbl))
+
+(use-package sendmail
+  :after mu4e
+  :custom
+  (sendmail-program "/usr/local/bin/msmtp"))
+
+(use-package smtpmail
+  :after mu4e)
+
+(use-package mwim
+  :bind* (("C-a" . mwim-beginning)
+          ("C-e" . mwim-end)))
 
 
 (use-package org
@@ -880,6 +1010,7 @@ abort completely with `C-g'."
           ("C-c e s" . org-sparse-tree)
           ("C-c e t" . org-tags-sparse-tree))
   :custom
+  (org-indirect-buffer-display 'current-window)
   ;; make symlink instead of hard copy
   (org-attach-method 'lns)
   ;; delete attachment when archiving entry
@@ -915,7 +1046,7 @@ abort completely with `C-g'."
   (org-export-backends '(ascii html icalendar latex md koma-letter))
   (org-export-with-tags nil)
   (org-startup-with-inline-images t)
-  (org-startup-indented t)
+  (org-startup-indented nil)
   (org-image-actual-width '(400))
   :config
 
@@ -946,6 +1077,7 @@ _y_es  _n_o    _t_oggle
 
 (use-package org-agenda
   :bind* (("C-c a" . org-agenda))
+  :custom (org-agenda-window-setup 'current-window)
   :config
 
   ;; inspired from  http://pages.sachachua.com/.emacs.d/Sacha.html#orgce6f46d
@@ -983,16 +1115,11 @@ _y_es  _n_o    _t_oggle
   :commands (org-archive-subtree))
 
 
-(use-package org-babel
-  :after org
-  :commands (org-babel-tangle))
-
-
 (use-package org-bullets
   :hook
   (org-mode . org-bullets-mode)
   :custom
-  (org-bullets-bullet-list '("➡" "➠" "➟" "➝" "↪")))
+  (org-bullets-bullet-list '("◉" "○" "◉" "○" "◉" "○")))
 
 
 (use-package org-capture
@@ -1036,6 +1163,11 @@ _y_es  _n_o    _t_oggle
              org-web-tools-insert-web-page-as-entry
              org-web-tools-read-url-as-org
              org-web-tools-convert-links-to-page-entries))
+
+
+(use-package ob
+  :after org
+  :commands (org-babel-tangle))
 
 
 (use-package ob-R
@@ -1141,10 +1273,158 @@ _y_es  _n_o    _t_oggle
       ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
       ("\\paragraph{%s}" . "\\paragraph*{%s}")))))
 
+(use-package ox-beamer
+  :commands (org-beamer-mode))
+
+
+(use-package outline
+  :custom
+  (outline-minor-mode-prefix "\M-#"))
+
+(use-package outorg
+  :after outline)
+
+(use-package outshine
+  :hook (outline-minor-mode . outshine-hook-function)
+  :bind* (:map outline-minor-mode-map
+               ("C-A-i" . outshine-cycle-buffer))
+  :custom
+  (outshine-use-speed-commands t))
+
+(use-package navi-mode
+  :after outline)
+
+
+(use-package paren
+  :hook (after-init . show-paren-mode))
+
+
+(use-package pathify
+  :after dired
+  :bind* (:map dired-mode-map
+               ("L" . pathify-dired))
+  :custom
+  (pathify-directory "~/.local/bin/"))
+
+
+(use-package poporg
+  :bind* (("C-c #" . poporg-dwim)))
+
+
 (use-package prog-mode
   :config
   (add-hook 'prog-mode-hook 'outline-minor-mode)
   (add-hook 'prog-mode-hook 'hs-minor-mode))
+
+
+(use-package projectile
+  :commands (projectile-mode
+             projectile-find-file)
+  :bind* (("s-p" . projectile-switch-project))
+  :custom
+  (projectile-switch-project-action 'projectile-dired)
+  (projectile-completion-system 'ivy))
+
+
+(use-package rainbow-mode
+  :commands (rainbow-mode))
+
+
+(use-package rainbow-delimiters
+  :hook (prog-mode . rainbow-delimiters-mode))
+
+
+(use-package reftex
+  :after tex-site
+  ;; :bind (:map latex-mode-map
+  ;;             ("C-c [" . reftex-citation))
+  :hook (TeX-latex-mode . reftex-mode)
+  :custom
+  (reftex-default-bibliography
+   '("/Users/samuelbarreto/Dropbox/bibliography/references.bib"))
+  (reftex-cite-format 'biblatex))
+
+
+(use-package selected
+  :demand t
+  :commands (selected-global-mode)
+  :functions (org--wrap
+              org-enwrap!
+              selected-search)
+  :bind (:map selected-keymap
+              ("a" . align-regexp)
+              ("A" . align)
+         ("e" . er/expand-region)
+         ("c" . er/contract-region)
+         ("q" . selected-off)
+         ("s" . sort-lines)
+         ("S" . selected-search)
+         ("u" . upcase-region)
+         ("d" . downcase-region)
+         ("w" . count-words-region)
+         ("m" . apply-macro-to-region-lines)
+         ("n" . sam|narrow-or-widen-dwim)
+         ("x" . kill-ring-save)
+         ("X" . kill-region)
+         :map selected-org-mode-map
+         ("e" . org-insert-structure-template)
+         ("t" . org-table-convert-region)
+         ("|" . org-table-convert-region)
+         :map selected-markdown-mode-map
+         ("q" . markdown-blockquote-region))
+  :custom
+  (selected-minor-mode-override t)
+  :init
+  (setq selected-org-mode-map (make-sparse-keymap))
+  (setq selected-markdown-mode-map (make-sparse-keymap))
+  :config
+  (selected-global-mode)
+
+  (defun selected-search (key beg end)
+    (interactive
+     (list
+      (read-key (propertize-prompt "\
+Search [g]oogle / google-[s]cholar / [w]ikipédia /
+(C-g) Escape"))
+      (region-beginning)
+      (region-end)))
+    (pcase key
+      (?s (sam|google-scholar beg end))
+      (?g (sam|google beg end))
+      (?w (sam|wikipedia beg end))
+      (?\C-g nil)
+      (_ (call-interactively 'selected-search)))))
+
+
+(use-package shell
+  :functions (shell-dwim)
+  :bind ("s-'" . shell-dwim)
+  :commands (shell)
+  :config
+  (setq explicit-shell-file-name "/usr/local/bin/bash")
+  (defun shell-dwim ()
+    "Opens a shell buffer in directory associated with current
+buffer.
+
+If the current buffer is already a shell buffer, it closes the
+window or do nothing if shell is the sole current window in
+frame.
+"
+
+    (interactive)
+    (if (string-equal major-mode "shell-mode")
+        (ignore-errors (delete-window))
+      (let* ((cwd default-directory)
+             (buf "*shell*")
+             (proper-cwd (shell-quote-argument (expand-file-name cwd))))
+        (shell buf)
+        (with-current-buffer buf
+          (goto-char (point-max))
+          (comint-kill-input)
+          (insert (concat "cd " proper-cwd))
+          (let ((comint-process-echoes t))
+            (comint-send-input))
+          (recenter 0))))))
 
 
 (use-package smartparens
@@ -1153,6 +1433,10 @@ _y_es  _n_o    _t_oggle
 	     smartparens-strict-mode
 	     sp-local-pair
 	     sp-pair)
+  :custom
+  (sp-highlight-pair-overlay nil)
+  (sp-highlight-wrap-overlay nil)
+  (sp-highlight-wrap-tag-overlay nil)
   :bind* (("C-M-f" . sp-forward-sexp)
           ("C-M-b" . sp-backward-sexp)
           ("C-M-d" . sp-down-sexp)
@@ -1182,8 +1466,11 @@ _y_es  _n_o    _t_oggle
   ;; Only use smartparens in web-mode
   (sp-local-pair 'text-mode "« " " »" :trigger "«" :trigger-wrap "«")
   (sp-local-pair 'markdown-mode "_" "_")
+
   (sp-local-pair 'markdown-mode "**" "**")
   (sp-local-pair 'markdown-mode "`" "`")
+  (sp-local-pair 'markdown-mode "\\<" "\\>")
+
   (sp-local-pair 'web-mode "<% " " %>")
   (sp-local-pair 'web-mode "{ " " }")
   (sp-local-pair 'web-mode "<%= "  " %>")
@@ -1200,9 +1487,9 @@ _y_es  _n_o    _t_oggle
   (sp-local-pair 'org-mode "=" "=")
   (sp-local-pair 'text-mode "--- " " ---" :trigger "—" :trigger-wrap "—")
 
-  (sp-local-pair 'org-mode "/" "/" :trigger-wrap "/" )
-  (sp-local-pair 'org-mode "*" "*" :trigger-wrap "*")
-  (sp-local-pair 'org-mode "#+BEGIN_QUOTE\n" "#+END_QUOTE\n" :wrap "M-( q")
+  (sp-local-pair 'org-mode "/" "/" :actions '(wrap insert))
+  (sp-local-pair 'org-mode "*" "*" :actions '(wrap insert) :unless '(sp-point-at-bol-p))
+
   (sp-pair "'" nil :actions :rem)
   (sp-pair "`" nil :actions :rem)
 
@@ -1220,9 +1507,36 @@ _y_es  _n_o    _t_oggle
     (indent-according-to-mode)))
 
 
+(use-package smex)
+
+
+(use-package solarized
+  :demand t)
+
+
+(use-package spotlight
+  :bind* (("C-c C-s" . spotlight)
+          ("C-c C-S-s" . spotlight-fast))
+  :custom
+  (spotlight-tmp-file (no-littering-expand-var-file-name "spotlight-tmp-file")))
+
+
+(use-package string-edit
+  :bind* ("C-c s" . string-edit-at-point))
+
+
 (use-package swiper
   :bind* ("M-s" . swiper))
 
+
+(use-package tex-site
+  :commands (TeX-tex-mode)
+  :mode (("\\.tex\\'" . TeX-tex-mode)
+         ("\\.cls\\'" . TeX-tex-mode))
+  :custom
+  (TeX-PDF-mode t)
+  (TeX-engine 'default)
+  (LaTeX-item-indent 2))
 
 
 (use-package undo-tree
@@ -1241,6 +1555,14 @@ _y_es  _n_o    _t_oggle
              global-undo-tree-mode)
   :config
   (global-undo-tree-mode 1))
+
+
+(use-package visual-fill-column
+  :commands (visual-fill-column-mode)
+  :init
+  (add-hook! 'visual-fill-column-mode-hook
+    (visual-line-mode +1)))
+
 
 (use-package which-key
   :defer 2
@@ -1283,6 +1605,11 @@ _y_es  _n_o    _t_oggle
   (setq comint-output-filter-functions
         (remove 'ansi-color-process-output comint-output-filter-functions)))
 
+
+(use-package yaml-mode
+  :mode ("\\.yaml\\'" . yaml-mode))
+
+
 (use-package yasnippet
   :defer 5
   :commands (yas-global-mode)
@@ -1294,309 +1621,33 @@ _y_es  _n_o    _t_oggle
 (use-package yasnippet-snippets
   :after yasnippet)
 
-;;; Functions
-
-;; (defun sam--read-transparency-input ()
-;;   (let* ((msg "(%s) \t Increase [tT] / Decrease [sS] / Escape [C-g]")
-;;                 (alpha    (propertize "%s" ))
-;;                 (increase (format "Increase %s / "
-;;                                   (propertize "[tT]" 'face '(:foreground "red"))))
-;;                 (decrease (format "Decrease %s / "
-;;                                   (propertize "[sS]" 'face '(:foreground "red"))))
-;;                 (escape   (format "Escape %s"
-;;                                   (propertize "C-g" 'face '(:foreground "blue")))))
-;;     (read-key (format "(%s) \t %s %s %s]"
-;;                       (frame-parameter nil 'alpha)
-;;                       increase
-;;                       decrease
-;;                       escape))))
-
-;; (defun sam|transparency (x)
-;;   (interactive
-;;    (list (let* ((msg "(%s) \t Increase [tT] / Decrease [sS] / Escape [C-g]")
-;;                 (alpha    (propertize "%s" ))
-;;                 (increase (format "Increase %s / "
-;;                                   (propertize "[tT]" 'face '(:foreground "red"))))
-;;                 (decrease (format "Decrease %s / "
-;;                                   (propertize "[sS]" 'face '(:foreground "red"))))
-;;                 (escape   (format "Escape %s"
-;;                                   (propertize "C-g" 'face '(:foreground "blue")))))
-;;            (read-key (format "(%s) \t Increase [tT] / Decrease [sS] / Escape [C-g]"
-;;                                         (frame-parameter nil 'alpha))))))
-;;   (cl-flet
-;;       ((set-alpha!
-;;         (inc)
-;;         (let* ((alpha (frame-parameter (selected-frame) 'alpha))
-;;                (next-alpha (cond ((not alpha) 100)
-;;                                  ((> (- alpha inc) 100) 100)
-;;                                  ((< (- alpha inc) 0) 0)
-;;                                  (t (- alpha inc)))))
-;;           (set-frame-parameter (selected-frame) 'alpha next-alpha)
-;;           (call-interactively 'sam|transparency))))
-;;     (pcase x
-;;       (?t (set-alpha! +1))
-;;       (?s (set-alpha! -1))
-;;       (?T (set-alpha! +10))
-;;       (?S (set-alpha! -10))
-;;       (?= (set-frame-parameter
-;;            (selected-frame) 'alpha
-;;            (read-number "Set to : ")))
-;;       (?\C-g nil)
-;;       (_ (call-interactively 'sam|transparency)))))
+(use-package yas-helpers
+  :after yasnippet
+  :load-path "~/.emacs.d/lisp/")
 
 
-(defun sam|kill-word-at-point (arg)
-  (interactive "P")
-  (let* ((argp (and arg (= 4 (prefix-numeric-value arg))))
-         (beg (beginning-of-thing (if argp 'symbol 'word)))
-         (end (end-of-thing (if argp 'symbol 'word))))
-    (save-excursion
-      (kill-region beg end))))
-
-;; http://endlessparentheses.com/emacs-narrow-or-widen-dwim.html
-(eval-when-compile
-  (defun sam|narrow-or-widen-dwim (p)
-    "Widen if buffer is narrowed, narrow-dwim otherwise.
-Dwim means: region, org-src-block, org-subtree, or
-defun, whichever applies first. Narrowing to
-org-src-block actually calls `org-edit-src-code'.
-
-With prefix P, don't widen, just narrow even if buffer
-is already narrowed."
-    (interactive "P")
-    (declare (interactive-only))
-    (cond ((and (buffer-narrowed-p) (not p)) (widen))
-          ((region-active-p)
-           (narrow-to-region (region-beginning)
-                             (region-end)))
-          ((derived-mode-p 'org-mode)
-           ;; `org-edit-src-code' is not a real narrowing
-           ;; command. Remove this first conditional if
-           ;; you don't want it.
-           (cond ((ignore-errors (org-edit-src-code) t)
-                  (delete-other-windows))
-                 ((ignore-errors (org-narrow-to-block) t))
-                 (t (org-narrow-to-subtree))))
-          ((looking-at outline-regexp)
-           (ignore-errors (outline-narrow-to-subtree)))
-          ((derived-mode-p 'latex-mode)
-           (LaTeX-narrow-to-environment))
-          (t (narrow-to-defun)))))
-
-(defun sam|switch-to-other-buffer ()
-  "Switch to other buffer"
-  (interactive)
-  (switch-to-buffer (other-buffer)))
-
-;; from https://github.com/syl20bnr/spacemacs/
-(defun sam|open-in-external-app ()
-  "Open current file in external application."
-  (interactive)
-  (let ((file-path (if (eq major-mode 'dired-mode)
-                       (dired-get-file-for-visit)
-                     (buffer-file-name))))
-    (if file-path
-        (shell-command (format "open \"%s\"" file-path))
-      (message "No file associated to this buffer."))))
-
-(defun iso-timestamp ()
-  (concat (format-time-string "%Y-%m-%dT%T")
-          ((lambda (x) (concat (substring x 0 3) ":" (substring x 3 5)))
-           (format-time-string "%z"))))
-
-(defun sam|iterm-here ()
-  "Go to present working dir and focus iterm"
-  (interactive)
-  (let ((dir (shell-quote-argument (expand-file-name default-directory))))
-    (do-applescript
-     (concat
-      " tell application \"iTerm2\"\n"
-      "   tell the current session of current window\n"
-      (format "     write text \"cd %s\" \n"
-              ;; string escaping madness for applescript
-              (replace-regexp-in-string "\\\\" "\\\\\\\\" dir))
-      "   end tell\n"
-      " end tell\n"
-      " do shell script \"open -a iTerm\"\n"))))
-
-(defun sam|iterm-focus ()
-  (interactive)
-  (do-applescript
-   " do shell script \"open -a iTerm\"\n"))
-
-(defun sam|finder-here ()
-  (interactive)
-  (let* ((dir default-directory)
-         (scr (format " do shell script \"open %s\"\n" dir)))
-    (do-applescript scr)))
-
-;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph
-(defun sam|unfill-paragraph (&optional region)
-  "Takes a multi-line paragraph and makes it into a single line of text."
-  (interactive (progn (barf-if-buffer-read-only) '(t)))
-  (let ((fill-column (point-max))
-        ;; This would override `fill-column' if it's an integer.
-        (emacs-lisp-docstring-fill-column t))
-    (fill-paragraph nil region)))
-
-;; this function is used to append multiple elements to the list 'ox-latex
-(defun append-to-list! (list-var elements)
-  "Append ELEMENTS to the end of LIST-VAR. The return value is the new value of LIST-VAR."
-  (unless (consp elements) (error "ELEMENTS must be a list"))
-  (let ((list (symbol-value list-var)))
-    (if list
-        (setcdr (last list) elements)
-      (set list-var elements)))
-  (symbol-value list-var))
-
-(defun modi/multi-pop-to-mark (orig-fun &rest args)
-  "Call ORIG-FUN until the cursor moves.
-Try the repeated popping up to 10 times."
-  (let ((p (point)))
-    (dotimes (i 10)
-      (when (= p (point))
-        (apply orig-fun args)))))
-
-(advice-add 'pop-to-mark-command :around
-            #'modi/multi-pop-to-mark)
-(setq set-mark-command-repeat-pop t)
-
-(defun sam|set-transparency (inc)
-  "Increase or decrease the selected frame transparency"
-  (let* ((alpha (frame-parameter (selected-frame) 'alpha))
-         (next-alpha (cond ((not alpha) 100)
-                           ((> (- alpha inc) 100) 100)
-                           ((< (- alpha inc) 0) 0)
-                           (t (- alpha inc)))))
-    (set-frame-parameter (selected-frame) 'alpha next-alpha)))
-
-(defun hour-minute-timestamp ()
-    (format-time-string "%H:%M" (current-time)))
-;;;; personnal interactive functions
-
-(defun sam|indent-region ()
-  "Indent region "
-  (interactive)
-  (let ((beg (region-beginning))
-        (end (region-end)))
-    (indent-region beg end)))
-
-(defun sam|indent-paragraph ()
-  "Indent paragraph at point according to mode"
-  (interactive)
-  (save-excursion
-    (mark-paragraph)
-    (indent-region (region-beginning) (region-end))))
-
-(defun sam|join-to-next-line ()
-  "Join current line to next line."
-  (interactive)
-  (join-line 4))
-
-(defun sam|duplicate-line ()
-  "Duplicate the line containing point."
-  (interactive)
-  (save-excursion
-    (let (line-text)
-      (goto-char (line-beginning-position))
-      (let ((beg (point)))
-        (goto-char (line-end-position))
-        (setq line-text (buffer-substring beg (point))))
-      (if (eobp)
-          (insert ?\n)
-        (forward-line))
-      (open-line 1)
-      (insert line-text))))
-
-(defun sam|maximize-window ()
-  "Maximize frame on first use, toggle frame fullscreen on second
-consecutive use."
-  (interactive)
-  (let* ((second? (eq last-command this-command))
-         (fullscreen (frame-parameter nil 'fullscreen))
-         (maximized? (eq 'maximized fullscreen))
-         (fullscreen? (eq 'fullboth fullscreen)))
-    (cond ((and second? maximized?)
-           (toggle-frame-fullscreen))
-          (fullscreen?
-           (toggle-frame-fullscreen))
-          (t
-           (toggle-frame-maximized)))))
-
-(defun sam|main-window (&optional frame)
-  "Refocus the main editing window.
-
-Delete all side windows at first use ; at second consecutive use
-it also delete other normal windows currently active in the
-frame."
-  (interactive)
-  (let* ((frame (window-normalize-frame frame))
-         (window--sides-inhibit-check t)
-         (sw? (window-with-parameter 'window-side nil frame)))
-    (cond ((and (eq last-command this-command) sw?)
-           (ignore-errors (window-toggle-side-windows))
-           (delete-other-windows))
-          (sw?
-           (window-toggle-side-windows))
-          (t
-           (delete-other-windows)))))
+(use-package winner
+  :hook (after-init . winner-mode)
+  :bind (("C-c <left>" . hydra-winner/winner-undo)
+         ("C-c <right>" . hydra-winner/winner-redo))
+  :config
+  (defhydra hydra-winner (:color red :hint nil)
+    ("<left>" winner-undo "undo")
+    ("<right>" winner-redo "redo")))
 
 
-;;;; completion help
+(use-package zenburn-theme
+  :defer t)
 
-(defun sam--completion-collection (col)
-  (mapcar (lambda (x)
-            (concat (propertize (car x) 'font-lock-face '(:foreground "#268bd2"))
-                    " => "
-                    (propertize (cadr x) 'face 'slanted)))
-          col))
 
-(defun sam--completion-collection-out (candidate)
-  (substring-no-properties candidate 0 (string-match " => " candidate)))
 
-;;;; use-package completions
+;;; Personnal functions
 
-(defun use-package-jump--list-calls ()
-  (let ((packages))
-    (save-excursion
-      (goto-char (point-max))
-      (while (beginning-of-defun)
-        (let ((line (buffer-substring (line-beginning-position) (line-end-position))))
-          (when (string-match "^(use-package \\([^[:space:]\n]+\\)" line)
-            (push (cons (match-string-no-properties 1 line) (point))
-                  packages)))))
-    packages))
-
-;;;; org mode enwrapping
-
-(defun org--wrap (block-name beg end)
-  (let ((beg-name (format "#+BEGIN_%s\n" (upcase block-name)))
-        (end-name (format "#+END_%s\n" (upcase block-name))))
-    (save-excursion
-      (goto-char end)
-      (if (= end (point-at-bol))
-          (insert end-name)
-        (insert (concat "\n" end-name))))
-    (save-excursion
-      (goto-char beg)
-      (if (= beg (point-at-bol))
-          (insert beg-name)
-        (insert (concat "\n" beg-name))))))
-
-(defun org-enwrap! (x beg end)
-  (interactive
-   (list
-    (read-key "Wrap with [q]uote, [s]ource, [e]xample, [v]erse ")
-    (region-beginning)
-    (region-end)))
-  (pcase x
-    (?q (org--wrap "QUOTE" beg end))
-    (?s (org--wrap "SRC" beg end))
-    (?e (org--wrap "EXAMPLE" beg end))
-    (?v (org--wrap "VERSE" beg end))
-    (?\C-g nil)
-    (_ (call-interactively 'org-enwrap!))))
-
+(use-package sam-helpers
+  :load-path "~/.emacs.d/lisp/"
+  :demand t
+  :commands (use-package-jump)
+  :bind* ("s-C" . sam-switch-to-compilation))
 
 ;;; keybindings
 
@@ -1604,36 +1655,55 @@ frame."
   :config
   (bind-keys*
    ("ð"       . sam|kill-word-at-point)
-   ("C-c v"   . magit-status)
-   ("C-S-k"   . kill-whole-line)
+
    ("C-/"     . complete-symbol)
-   ("C-x n"   . sam|narrow-or-widen-dwim)
+   ("C-y"     . hydra-yank-pop/yank)
+   ("C-S-k"   . kill-whole-line)
+
+   ("C-c v"   . magit-status)
+
+   ("C-x |"   . split-window-right)
    ("C-x ="   . balance-windows)
+   ("C-x n"   . sam|narrow-or-widen-dwim)
    ("C-x M-c" . compile)
 
-   ("M-/"   . hippie-expand)
+   ("M-SPC" . cycle-spacing)
+   ("M-y"   . hydra-yank-pop/yank-pop)
    ("M-«"   . beginning-of-buffer)
    ("M-»"   . end-of-buffer)
+
    ("M-s-n" . forward-paragraph)
    ("M-s-p" . backward-paragraph)
-   ("M-SPC" . cycle-spacing)
 
-   ("s-<tab>" . sam|switch-to-other-buffer)
-   ("s-d"     . kill-buffer-and-window)
+   ("A-i" . sam|indent-paragraph)
+   ("A-c" . windmove-left)
+   ("A-r" . windmove-right)
+   ("A-t" . windmove-down)
+   ("A-s" . windmove-up)
+   ("A-w" . window-toggle-side-windows)
+
    ("s-I"     . sam|indent-paragraph)
+   ("s-c"     . clone-indirect-buffer-other-window)
+   ("s-d"     . kill-buffer-and-window)
    ("s-j"     . sam|join-to-next-line)
+   ("s-n"     . sam|narrow-or-widen-dwim)
    ("s-o"     . sam|open-in-external-app)
    ("s-q"     . sam|unfill-paragraph)
    ("s-u"     . negative-argument)
    ("s-w"     . sam|main-window)
-   ("s-n"     . sam|narrow-or-widen-dwim)
+   ("s-<tab>" . sam|switch-to-other-buffer)
 
-   ("H-w" . sam|maximize-window)
+   ("H-'" . sam|iterm-here)
+   ("H-o" . sam|reveal-in-finder)
    ("H-l" . sam|duplicate-line)
    ("H-n" . make-frame)
    ("H-u" . revert-buffer)
-   ("H-'" . sam|iterm-here)
+   ("H-w" . sam|maximize-window)
+   ("H-<backspace>" . switch-to-buffer-other-window)
 
    ("H-M-p" . scroll-up-command)
    ("H-M-n" . scroll-down-command)
    ("H-M-s" . mark-sexp)))
+
+(add-hook! 'after-init
+  (load (no-littering-expand-etc-file-name "custom.el")))
