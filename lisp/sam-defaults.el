@@ -42,10 +42,23 @@
   :group 'sam
   :type 'string)
 
+(defcustom sam-variable-pitch-font "Input Sans Narrow"
+  "Font for text"
+  :group 'sam
+  :type 'string)
+
 (defcustom sam-theme 'leuven
   "Default theme for my config"
   :group 'sam
   :type 'theme)
+
+(defcustom sam-use-variable-pitch-font t
+  "Whether to use a variable pitch font for non-coding situations
+or not.
+
+Defaults to t."
+  :group 'sam
+  :type 'boolean)
 
 ;;;; Macros
 
@@ -200,6 +213,15 @@ When using Homebrew, install it using \"brew install trash\"."
   "Set the default theme and fonts"
   (unless (eq sam-theme 'default)
     (load-theme sam-theme t))
+  (set-face-attribute
+   'variable-pitch
+   nil
+   :family sam-variable-pitch-font
+   :height 140)
+
+  (when sam-use-variable-pitch-font
+    (add-hook! 'text-mode-hook
+      (variable-pitch-mode 1)))
 
   (when window-system
     ;; increase space between lines
@@ -207,7 +229,7 @@ When using Homebrew, install it using \"brew install trash\"."
 
     ;; change default font for current frame
     (add-to-list 'default-frame-alist `(font . ,sam-font))
-    (set-face-attribute 'default nil :font sam-font)))
+    (set-face-attribute 'default nil :font sam-font :height 140)))
 
 (defun sam--initialize-frame! ()
   "Set the default dimension and position of a new frame."

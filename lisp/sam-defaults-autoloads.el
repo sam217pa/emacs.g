@@ -20,7 +20,7 @@ Add a lamdba containing BODY to hook HOOK.
 
 \(fn)" t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-defaults" '(#("system-move-file-to-trash" 0 1 (fontified nil) 1 25 (fontified nil)) #("sam-" 0 1 (fontified nil) 1 4 (fontified nil)))))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-defaults" '(#("system-move-file-to-trash" 0 1 (fontified t face font-lock-function-name-face) 1 25 (fontified nil)) #("sam-" 0 1 (fontified t face font-lock-function-name-face) 1 4 (face font-lock-function-name-face fontified t)))))
 
 ;;;***
 

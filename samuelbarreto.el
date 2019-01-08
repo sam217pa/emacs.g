@@ -12,7 +12,8 @@
   :load-path "~/.emacs.d/lisp/"
   :commands (sam-initialize!)
   :custom
-  (sam-font "CMU Typewriter Text 15")
+  (sam-font "Iosevka")
+  (sam-variable-pitch-font "Input Sans Narrow")
   (sam-theme 'zenburn)
   :init
   (sam-initialize!))
@@ -51,6 +52,10 @@
         (ansi-color-apply-on-region compilation-filter-start (point-max))))
     (add-hook 'compilation-filter-hook 'my-colorize-compilation-buffer)))
 
+(use-package auto-insert
+  :commands (auto-insert
+             auto-insert-mode))
+
 
 (use-package avy
   :commands (avy-goto-word-or-subword-1
@@ -83,6 +88,7 @@
   :bind* (("C-x b" . list-buffers)
           :map Buffer-menu-mode-map
           ("RET" . Buffer-menu-other-window))
+  :commands (Buffer-menu-toggle-files-only)
   :config
   (add-hook! 'Buffer-menu-mode-hook
     (Buffer-menu-toggle-files-only 1)))
@@ -407,6 +413,11 @@
   (add-hook! 'ess-mode-hook
     (setq-local outline-regexp "^## \\*"))
 
+  (add-to-list 'hs-special-modes-alist
+               '(ess-r-mode "{" "}" "#[#']" nil nil))
+
+
+
   (sp-local-pair
    'ess-mode "{" nil
    :post-handlers '((sam--create-newline-and-enter-sexp "RET")))
@@ -509,10 +520,6 @@ Totos   : _C-n_: next / _C-p_: prev / _C-s_: search"
       (org-make-link-string link page))))
 
 
-(use-package green-screen-theme
-  :defer t)
-
-
 (use-package hideshow
   :bind* (("s-h" . hs-toggle-hiding)))
 
@@ -562,6 +569,8 @@ Totos   : _C-n_: next / _C-p_: prev / _C-s_: search"
               hydra-set-transient-map)
   :functions (hydra-yank-pop/yank
               hydra-yank-pop/yank-pop)
+  :bind* (("C-y" . hydra-yank-pop/yank)
+          ("M-y" . hydra-yank-pop/yank-pop))
   :config
   (defhydra hydra-yank-pop (:hint nil)
     "yank"
@@ -681,11 +690,10 @@ Totos   : _C-n_: next / _C-p_: prev / _C-s_: search"
              ispell-get-word
              ispell-word)
   :bind* (("s-:" . ispell)
-          ("C-x C-i" . ispell-word-then-abbrev))
+          ("M-i" . ispell-word-then-abbrev))
+  :custom
+  (ispell-dictionary "francais")
   :config
-
-  (setq ispell-dictionary "francais")
-
   (defun ispell-word-then-abbrev (p)
     "Call `ispell-word', then create an abbrev for it.
 With prefix P, create local abbrev. Otherwise it will
@@ -719,6 +727,7 @@ abort completely with `C-g'."
 
 (use-package ivy
   :diminish ""
+  :commands (ivy-mode)
   :bind* (("s-t" . ivy-switch-buffer)
           ("s-<backspace>" . ivy-switch-buffer)
           :map ivy-mode-map
@@ -758,21 +767,23 @@ abort completely with `C-g'."
 
 (use-package key-chord
   :commands (key-chord-mode)
+  :custom
+  (key-chord-two-key-delay 0.2)
   :init
-  (key-chord-mode 1)
-  (setq key-chord-two-key-delay 0.2)
-  (key-chord-define-global "xq" #'god-local-mode))
+  (key-chord-mode 1))
 
 
 (use-package keyfreq
-  :commands (keyfreq-mode)
+  :commands (keyfreq-mode
+             keyfreq-autosave-mode)
   :config
   (keyfreq-autosave-mode 1))
 
 
 (use-package key-seq
   :after key-chord
-  :commands (key-seq-define-global)
+  :commands (key-seq-define-global
+             key-seq-define)
   :init
   (key-seq-define-global "qd" #'sam-ktb)
   (key-seq-define-global "qb" #'counsel-bookmark)
@@ -843,7 +854,8 @@ abort completely with `C-g'."
   :functions (sam-makefile-info
               sam-makefile-document)
   :commands (makefile-bsdmake-mode
-             makefile-gmake-mode)
+             makefile-gmake-mode
+             makefile-pickup-targets)
   :init
   (add-hook! 'makefile-bsdmake-mode-hook
     (makefile-gmake-mode))
@@ -894,14 +906,25 @@ abort completely with `C-g'."
 
 (use-package markdown-mode
   :mode ("\\.md\\'" . markdown-mode)
-  :init
-  (add-hook! 'markdown-mode-hook
-    (visual-fill-column-mode +1)
-    (auto-fill-mode -1)))
+  :hook (markdown-mode . outline-minor-mode))
 
+
+(use-package camp
+  :load-path "~/dotfile/emacs/private/minimenu/"
+  :commands (camp-minor-mode)
+  :hook (emacs-lisp-mode . camp-minor-mode))
 
 (use-package minions
   :hook (after-init . minions-mode))
+
+
+(use-package moody
+  :commands (moody-replace-mode-line-buffer-identification
+             moody-replace-vc-mode)
+  :init
+  (setq x-underline-at-descent-line t)
+  (moody-replace-mode-line-buffer-identification)
+  (moody-replace-vc-mode))
 
 
 (use-package mu4e
@@ -985,6 +1008,15 @@ abort completely with `C-g'."
           ("C-e" . mwim-end)))
 
 
+(use-package nim-mode
+  :mode ("\\.nim\\'" . nim-mode))
+
+(use-package nim-suggest
+  :after nim-mode
+  :hook ((nim-mode . nimsuggest-mode)
+         (nimsuggest-mode . flymake-mode)))
+
+
 (use-package org
   :commands (org-make-link-string
              org-next-visible-heading
@@ -1010,6 +1042,10 @@ abort completely with `C-g'."
           ("C-c e s" . org-sparse-tree)
           ("C-c e t" . org-tags-sparse-tree))
   :custom
+  ;; activate speed commands when on any outline star
+  (org-use-speed-commands
+   (lambda () (and (looking-at org-outline-regexp)
+              (looking-back "^\**" (1- (point))))))
   (org-indirect-buffer-display 'current-window)
   ;; make symlink instead of hard copy
   (org-attach-method 'lns)
@@ -1279,20 +1315,28 @@ _y_es  _n_o    _t_oggle
 
 (use-package outline
   :custom
-  (outline-minor-mode-prefix "\M-#"))
+  (outline-minor-mode-prefix (kbd "C-."))
+  :config
+  (define-key
+    outline-minor-mode-map
+    (kbd "TAB")
+    '(menu-item "" nil
+                :filter (lambda (&optional _)
+                          (when (outline-on-heading-p)
+                            'bicycle-cycle)))))
 
-(use-package outorg
-  :after outline)
+;; (use-package outorg
+;;   :after outline)
 
-(use-package outshine
-  :hook (outline-minor-mode . outshine-hook-function)
-  :bind* (:map outline-minor-mode-map
-               ("C-A-i" . outshine-cycle-buffer))
-  :custom
-  (outshine-use-speed-commands t))
+;; (use-package outshine
+;;   :hook (outline-minor-mode . outshine-hook-function)
+;;   :bind* (:map outline-minor-mode-map
+;;                ("C-A-i" . outshine-cycle-buffer))
+;;   :custom
+;;   (outshine-use-speed-commands t))
 
-(use-package navi-mode
-  :after outline)
+;; (use-package navi-mode
+;;   :after outline)
 
 
 (use-package paren
@@ -1426,13 +1470,17 @@ frame.
             (comint-send-input))
           (recenter 0))))))
 
+(use-package slime
+  :custom
+  (inferior-lisp-program "/usr/local/bin/sbcl --noinform"))
+
 
 (use-package smartparens
   :diminish (smartparens-mode . "")
   :commands (smartparens-global-mode
-	     smartparens-strict-mode
-	     sp-local-pair
-	     sp-pair)
+	         smartparens-strict-mode
+	         sp-local-pair
+	         sp-pair)
   :custom
   (sp-highlight-pair-overlay nil)
   (sp-highlight-wrap-overlay nil)
@@ -1447,14 +1495,13 @@ frame.
           ("C-M-u" . sp-backward-up-sexp)
           ("C-M-t" . sp-transpose-sexp)
           ("C-S-r" . sp-forward-slurp-sexp)
+          ("C-S-t" . sp-backward-barf-sexp)
           ("C-S-c" . sp-forward-barf-sexp)
           ("C-S-s" . sp-backward-slurp-sexp)
-          ("C-S-t" . sp-backward-barf-sexp)
           ("C-{"   . sp-backward-barf-sexp)
           ("C-}"   . sp-slurp-hybrid-sexp)
           ("C-S-b" . sp-backward-symbol)
           ("C-S-f" . sp-forward-symbol)
-          ("C-S-c" . sp-splice-sexp)
           ("C-ß"   . sp-splice-sexp))
   :init
   (add-hook! 'after-init-hook
@@ -1465,11 +1512,12 @@ frame.
   :config
   ;; Only use smartparens in web-mode
   (sp-local-pair 'text-mode "« " " »" :trigger "«" :trigger-wrap "«")
-  (sp-local-pair 'markdown-mode "_" "_")
 
+  (sp-local-pair 'markdown-mode "_" "_")
   (sp-local-pair 'markdown-mode "**" "**")
   (sp-local-pair 'markdown-mode "`" "`")
   (sp-local-pair 'markdown-mode "\\<" "\\>")
+  (sp-local-pair 'markdown-mode "$" "$")
 
   (sp-local-pair 'web-mode "<% " " %>")
   (sp-local-pair 'web-mode "{ " " }")
@@ -1561,7 +1609,8 @@ frame.
   :commands (visual-fill-column-mode)
   :init
   (add-hook! 'visual-fill-column-mode-hook
-    (visual-line-mode +1)))
+    (visual-line-mode +1)
+    (auto-fill-mode -1)))
 
 
 (use-package which-key
@@ -1605,6 +1654,10 @@ frame.
   (setq comint-output-filter-functions
         (remove 'ansi-color-process-output comint-output-filter-functions)))
 
+(use-package xsv
+  :load-path "~/dotfile/emacs/private/xsv/"
+  :commands (xsv-mode))
+
 
 (use-package yaml-mode
   :mode ("\\.yaml\\'" . yaml-mode))
@@ -1628,6 +1681,8 @@ frame.
 
 (use-package winner
   :hook (after-init . winner-mode)
+  :commands (winner-undo
+             winner-redo)
   :bind (("C-c <left>" . hydra-winner/winner-undo)
          ("C-c <right>" . hydra-winner/winner-redo))
   :config
@@ -1637,9 +1692,8 @@ frame.
 
 
 (use-package zenburn-theme
+  :no-require t
   :defer t)
-
-
 
 ;;; Personnal functions
 
@@ -1647,63 +1701,45 @@ frame.
   :load-path "~/.emacs.d/lisp/"
   :demand t
   :commands (use-package-jump)
-  :bind* ("s-C" . sam-switch-to-compilation))
+  :bind* (("H-'"     . sam|iterm-here)
+          ("H-l"     . sam|duplicate-line)
+          ("H-o"     . sam|reveal-in-finder)
+          ("H-w"     . sam|maximize-window)
+          ("s-<tab>" . sam|switch-to-other-buffer)
+          ("s-I"     . sam|indent-paragraph)
+          ("s-j"     . sam|join-to-next-line)
+          ("s-n"     . sam|narrow-or-widen-dwim)
+          ("s-o"     . sam|open-in-external-app)
+          ("s-q"     . sam|unfill-paragraph)
+          ("s-w"     . sam|main-window)
+          ("ð"       . sam|kill-word-at-point)
+          ("s-C"     . sam-switch-to-compilation)
+          ("C-x n"   . sam|narrow-or-widen-dwim)))
 
 ;;; keybindings
 
 (use-package bind-key
   :config
   (bind-keys*
-   ("ð"       . sam|kill-word-at-point)
-
-   ("C-/"     . complete-symbol)
-   ("C-y"     . hydra-yank-pop/yank)
-   ("C-S-k"   . kill-whole-line)
-
-   ("C-c v"   . magit-status)
-
-   ("C-x |"   . split-window-right)
-   ("C-x ="   . balance-windows)
-   ("C-x n"   . sam|narrow-or-widen-dwim)
-   ("C-x M-c" . compile)
-
-   ("M-SPC" . cycle-spacing)
-   ("M-y"   . hydra-yank-pop/yank-pop)
-   ("M-«"   . beginning-of-buffer)
-   ("M-»"   . end-of-buffer)
-
-   ("M-s-n" . forward-paragraph)
-   ("M-s-p" . backward-paragraph)
-
-   ("A-i" . sam|indent-paragraph)
-   ("A-c" . windmove-left)
-   ("A-r" . windmove-right)
-   ("A-t" . windmove-down)
-   ("A-s" . windmove-up)
-   ("A-w" . window-toggle-side-windows)
-
-   ("s-I"     . sam|indent-paragraph)
-   ("s-c"     . clone-indirect-buffer-other-window)
-   ("s-d"     . kill-buffer-and-window)
-   ("s-j"     . sam|join-to-next-line)
-   ("s-n"     . sam|narrow-or-widen-dwim)
-   ("s-o"     . sam|open-in-external-app)
-   ("s-q"     . sam|unfill-paragraph)
-   ("s-u"     . negative-argument)
-   ("s-w"     . sam|main-window)
-   ("s-<tab>" . sam|switch-to-other-buffer)
-
-   ("H-'" . sam|iterm-here)
-   ("H-o" . sam|reveal-in-finder)
-   ("H-l" . sam|duplicate-line)
-   ("H-n" . make-frame)
-   ("H-u" . revert-buffer)
-   ("H-w" . sam|maximize-window)
+   ("C-/"           . complete-symbol)
+   ("C-S-k"         . kill-whole-line)
+   ("C-x |"         . split-window-right)
+   ("C-x ="         . balance-windows)
+   ("C-x M-c"       . compile)
+   ("M-SPC"         . cycle-spacing)
+   ("M-«"           . beginning-of-buffer)
+   ("M-»"           . end-of-buffer)
+   ("M-s-n"         . forward-paragraph)
+   ("M-s-p"         . backward-paragraph)
+   ("s-c"           . clone-indirect-buffer-other-window)
+   ("s-d"           . kill-buffer-and-window)
+   ("s-u"           . negative-argument)
+   ("H-n"           . make-frame)
+   ("H-u"           . revert-buffer)
    ("H-<backspace>" . switch-to-buffer-other-window)
-
-   ("H-M-p" . scroll-up-command)
-   ("H-M-n" . scroll-down-command)
-   ("H-M-s" . mark-sexp)))
+   ("H-M-p"         . scroll-up-command)
+   ("H-M-n"         . scroll-down-command)
+   ("H-M-s"         . mark-sexp)))
 
 (add-hook! 'after-init
   (load (no-littering-expand-etc-file-name "custom.el")))
