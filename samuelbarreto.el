@@ -12,7 +12,7 @@
   :load-path "~/.emacs.d/lisp/"
   :commands (sam-initialize!)
   :custom
-  (sam-font "Iosevka")
+  (sam-font "Input Mono Narrow")
   (sam-variable-pitch-font "Input Sans Narrow")
   (sam-theme 'zenburn)
   :init
@@ -33,10 +33,9 @@
   :bind* (("M-é" . ace-window))
   :custom
   (aw-scope 'frame)
-  :config
-  (setq aw-keys '(?t ?s ?r ?n ?m ?a ?u ?i ?e))
-  (setq aw-background t)
-  (setq aw-ignore-current t))
+  (aw-keys '(?t ?s ?r ?n ?m ?a ?u ?i ?e))
+  (aw-background t)
+  (aw-ignore-current t))
 
 (use-package ansi-color
   :commands (ansi-color-apply-on-region)
@@ -52,7 +51,7 @@
         (ansi-color-apply-on-region compilation-filter-start (point-max))))
     (add-hook 'compilation-filter-hook 'my-colorize-compilation-buffer)))
 
-(use-package auto-insert
+(use-package autoinsert
   :commands (auto-insert
              auto-insert-mode))
 
@@ -308,7 +307,7 @@
 
   (defun elfeed-mark-all-as-read ()
     (interactive)
-    (mark-whole-buffer)
+    (call-interactively #'mark-whole-buffer) ;to prevent compiler warnings
     (elfeed-search-untag-all-unread))
 
   (defun elfeed-next-tag ()
@@ -912,7 +911,11 @@ abort completely with `C-g'."
 (use-package camp
   :load-path "~/dotfile/emacs/private/minimenu/"
   :commands (camp-minor-mode)
-  :hook (emacs-lisp-mode . camp-minor-mode))
+  :hook (emacs-lisp-mode . camp-minor-mode)
+  :bind (:map outline-minor-mode-map
+         ("o" . camp-outline))
+  :config
+  (define-key org-mode-map (kbd "t") #'camp-text))
 
 (use-package minions
   :hook (after-init . minions-mode))
@@ -1079,7 +1082,7 @@ abort completely with `C-g'."
   (org-footnote-section nil)
   (org-export-with-todo-keywords nil)
   (org-export-default-language "fr")
-  (org-export-backends '(ascii html icalendar latex md koma-letter))
+  (org-export-backends '(ascii html icalendar latex md))
   (org-export-with-tags nil)
   (org-startup-with-inline-images t)
   (org-startup-indented nil)
@@ -1314,29 +1317,29 @@ _y_es  _n_o    _t_oggle
 
 
 (use-package outline
-  :custom
-  (outline-minor-mode-prefix (kbd "C-."))
-  :config
-  (define-key
-    outline-minor-mode-map
-    (kbd "TAB")
-    '(menu-item "" nil
-                :filter (lambda (&optional _)
-                          (when (outline-on-heading-p)
-                            'bicycle-cycle)))))
+   :custom
+   (outline-minor-mode-prefix (kbd "C-."))
+   :functions (outline-narrow-to-subtree)
+   :commands (outline-minor-mode
+              outline-back-to-heading
+              outline-end-of-subtree)
+   :config
+   (defun outline-narrow-to-subtree ()
+     "Narrow to region containing the current outline subtree."
+     (interactive)
+     (narrow-to-region
+	  (progn (outline-back-to-heading t) (point))
+	  (progn (outline-end-of-subtree)
+	         (when (and (looking-at outline-regexp) (not (eobp))) (backward-char 1))
+	         (point))))
 
-;; (use-package outorg
-;;   :after outline)
-
-;; (use-package outshine
-;;   :hook (outline-minor-mode . outshine-hook-function)
-;;   :bind* (:map outline-minor-mode-map
-;;                ("C-A-i" . outshine-cycle-buffer))
-;;   :custom
-;;   (outshine-use-speed-commands t))
-
-;; (use-package navi-mode
-;;   :after outline)
+   (define-key
+     outline-minor-mode-map
+     (kbd "TAB")
+     '(menu-item "" nil
+                 :filter (lambda (&optional _)
+                           (when (outline-on-heading-p)
+                             'bicycle-cycle)))))
 
 
 (use-package paren
@@ -1357,6 +1360,7 @@ _y_es  _n_o    _t_oggle
 
 (use-package prog-mode
   :config
+  (add-hook 'prog-mode-hook 'display-line-numbers-mode)
   (add-hook 'prog-mode-hook 'outline-minor-mode)
   (add-hook 'prog-mode-hook 'hs-minor-mode))
 
@@ -1428,8 +1432,7 @@ _y_es  _n_o    _t_oggle
     (interactive
      (list
       (read-key (propertize-prompt "\
-Search [g]oogle / google-[s]cholar / [w]ikipédia /
-(C-g) Escape"))
+Search [g]oogle / google-[s]cholar / [w]ikipédia / (C-g) Escape"))
       (region-beginning)
       (region-end)))
     (pcase key
