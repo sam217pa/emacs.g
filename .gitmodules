@@ -13,6 +13,9 @@
 [submodule "auctex"]
 	path = lib/auctex
 	url = https://git.savannah.gnu.org/git/auctex.git
+[submodule "auto-async-byte-compile"]
+	path = lib/auto-async-byte-compile
+	url = git@github.com:rubikitch/auto-async-byte-compile.git
 [submodule "auto-compile"]
 	path = lib/auto-compile
 	url = git@github.com:emacscollective/auto-compile.git
@@ -218,9 +221,6 @@
 [submodule "no-littering"]
 	path = lib/no-littering
 	url = git@github.com:emacscollective/no-littering.git
-[submodule "nord-theme"]
-	path = lib/nord-theme
-	url = git@github.com:arcticicestudio/nord-emacs.git
 [submodule "org"]
 	path = lib/org
 	url = git@code.orgmode.org:bzg/org-mode.git
