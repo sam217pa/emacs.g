@@ -220,16 +220,17 @@ When using Homebrew, install it using \"brew install trash\"."
    :height 140)
 
   (when sam-use-variable-pitch-font
-    (add-hook! 'text-mode-hook
+    (remove-hook 'text-mode-hook
       (variable-pitch-mode 1)))
 
   (when window-system
     ;; increase space between lines
-    (setq-default line-spacing 0)
+    (setq-default line-spacing 1)
 
     ;; change default font for current frame
     (add-to-list 'default-frame-alist `(font . ,sam-font))
-    (set-face-attribute 'default nil :font sam-font :height 140)))
+    (add-to-list 'default-frame-alist `(:height . 150))
+    (set-face-attribute 'default nil :font sam-font :height 150)))
 
 (defun sam--initialize-frame! ()
   "Set the default dimension and position of a new frame."
@@ -269,6 +270,11 @@ When using Homebrew, install it using \"brew install trash\"."
           ("\\*Tags List\\*" display-buffer-in-side-window
            (side . right)
            (slot . 1)
+           (window-width . fit-window-to-buffer)
+           (preserve-size . (t . nil)) ,sam--parameters)
+          ("\\*toc\\*" display-buffer-in-side-window
+           (side . left)
+           (slot . 2)
            (window-width . fit-window-to-buffer)
            (preserve-size . (t . nil)) ,sam--parameters)
           ("\\*\\(?:help\\|grep\\|Completions\\)\\*"

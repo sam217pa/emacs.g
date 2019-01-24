@@ -55,5 +55,10 @@ maps key to value for each key-value pair in KV-PAIRS."
           (lambda (pair) `(puthash ,@pair ,var))
           (sam--group kv-pairs 2)))))
 
+(defun sam-add-to-list (lst &rest args)
+  (mapcar
+   (lambda (el) (add-to-list lst el))
+   args))
+
 (provide 'sam-utils)
 ;;; sam-utils.el ends here

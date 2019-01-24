@@ -1,4 +1,5 @@
 ;;; init.el --- user-init-file                    -*- lexical-binding: t -*-
+
 ;;; Early birds
 (progn ;     startup
   (defvar before-user-init-time (current-time)

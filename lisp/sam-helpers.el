@@ -1,6 +1,33 @@
-;;; sam-helpers.el --- Various helper functions. -*- lexical-binding: t -*-
+;;; sam-helpers.el --- personnal helper functions    -*- lexical-binding: t; -*-
 
-;;; Custom
+;; Copyright (C) 2019  Samuel Barreto
+
+;; Author: Samuel Barreto <samuel.barreto8@gmail.com>
+;; Keywords: convenience, functions
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;;
+
+;;; Code:
+
+(require 'cl-lib)
+(require 'sam-utils)
+
+;;;; Custom
 
 (defcustom sam-font-text "CMU Concrete 16"
   "Font for text situation"
@@ -15,7 +42,9 @@
   :type 'alist
   :group 'sam)
 
-;;; Functions
+;;;; Functions
+
+(declare-function LaTeX-narrow-to-environment "auctex") ; silence byte-compiler
 
 ;;;; propertize prompt
 ;; A function to propertize a prompt with simple cookies, like it's done
@@ -43,7 +72,6 @@ between curly brackets with `font-lock-constant-face'."
                       str)))))
       str))
 
-;; Un autre commentaire.
 ;;; frame transparency adjustment
 
 (defun sam--set-alpha! (inc)
@@ -53,10 +81,10 @@ between curly brackets with `font-lock-constant-face'."
                            ((< (- alpha inc) 0) 0)
                            (t (- alpha inc)))))
     (set-frame-parameter (selected-frame) 'alpha next-alpha)
-    (call-interactively 'sam|adjust-alpha)))
+    (call-interactively 'sam-adjust-alpha)))
 
 ;;;###autoload
-(defun sam|adjust-alpha (x)
+(defun sam-adjust-alpha (x)
   "Adjust the frame transparence.
 
 - Decrease with fine or coarse grain with s and S,
@@ -80,10 +108,10 @@ between curly brackets with `font-lock-constant-face'."
          (read-number "Set to : ")))
     (?0 (set-frame-parameter (selected-frame) 'alpha 100))
     (?\C-g nil)
-    (_ (call-interactively 'sam|adjust-alpha))))
+    (_ (call-interactively 'sam-adjust-alpha))))
 
 ;;;###autoload
-(defun sam|kill-word-at-point (arg)
+(defun sam-kill-word-at-point (arg)
   (interactive "P")
   (let* ((argp (and arg (= 4 (prefix-numeric-value arg))))
          (beg (beginning-of-thing (if argp 'symbol 'word)))
@@ -96,7 +124,7 @@ between curly brackets with `font-lock-constant-face'."
 ;;;; narrow or widen DWIM
 
 ;;;###autoload
-(defun sam|narrow-or-widen-dwim (p)
+(defun sam-narrow-or-widen-dwim (p)
   "Widen if buffer is narrowed, narrow-dwim otherwise.
 Dwim means: region, org-src-block, org-subtree, or
 defun, whichever applies first. Narrowing to
@@ -125,7 +153,7 @@ is already narrowed."
         (t (narrow-to-defun))))
 
 ;;;###autoload
-(defun sam|switch-to-other-buffer ()
+(defun sam-switch-to-other-buffer ()
   "Switch to other buffer"
   (interactive)
   (switch-to-buffer (other-buffer)))
@@ -134,7 +162,7 @@ is already narrowed."
 ;;;; open file in external app
 
 ;;;###autoload
-(defun sam|open-in-external-app ()
+(defun sam-open-in-external-app ()
   "Open current file in external application."
   (interactive)
   (let ((file-path (cond ((eq major-mode 'dired-mode)
@@ -147,7 +175,7 @@ is already narrowed."
       (message "No file associated to this buffer."))))
 
 ;;;###autoload
-(defun sam|reveal-in-finder ()
+(defun sam-reveal-in-finder ()
   "Reveal current file in the finder application."
   (interactive)
   (let* ((file-path (if (eq major-mode 'dired-mode)
@@ -163,16 +191,8 @@ is already narrowed."
         (z (format-time-string "%z")))
     (concat d (substring z 0 3) ":" (substring z 3 5))))
 
-(let* ((dir (expand-file-name default-directory))
-       (cmd (if (string-match "ssh" dir)
-                (let* ((sp-dir (split-string dir ":"))
-                       (host (elt sp-dir 1))
-                       (-dir (shell-quote-argument (elt sp-dir 2))))
-                  (format "ssh %s 'cd %s'" host -dir))
-              (format "cd %s" (shell-quote-argument dir))))))
-
 ;;;###autoload
-(defun sam|iterm-here ()
+(defun sam-iterm-here ()
   "Go to present working dir and focus iterm"
   (interactive)
   (let*
@@ -195,13 +215,13 @@ is already narrowed."
       " do shell script \"open -a iTerm\"\n"))))
 
 ;;;###autoload
-(defun sam|iterm-focus ()
+(defun sam-iterm-focus ()
   (interactive)
   (do-applescript
    " do shell script \"open -a iTerm\"\n"))
 
 ;;;###autoload
-(defun sam|finder-here ()
+(defun sam-finder-here ()
   (interactive)
   (let* ((dir default-directory)
          (scr (format " do shell script \"open %s\"\n" dir)))
@@ -211,7 +231,7 @@ is already narrowed."
 
 ;; Stefan Monnier <foo at acm.org>. It is the opposite of fill-paragraph
 ;;;###autoload
-(defun sam|unfill-paragraph (&optional region)
+(defun sam-unfill-paragraph (&optional region)
   "Takes a multi-line paragraph and makes it into a single line of text."
   (interactive (progn (barf-if-buffer-read-only) '(t)))
   (let ((fill-column (point-max))
@@ -244,21 +264,19 @@ Try the repeated popping up to 10 times."
             #'modi/multi-pop-to-mark)
 (setq set-mark-command-repeat-pop t)
 
-(defun hour-minute-timestamp ()
-    (format-time-string "%H:%M" (current-time)))
+(defsubst hour-minute-timestamp ()
+  (format-time-string "%H:%M" (current-time)))
 
 ;;;; personnal interactive functions
 
 ;;;###autoload
-(defun sam|indent-region ()
+(defun sam-indent-region (beg end)
   "Indent region "
-  (interactive)
-  (let ((beg (region-beginning))
-        (end (region-end)))
-    (indent-region beg end)))
+  (interactive "r")
+  (indent-region beg end))
 
 ;;;###autoload
-(defun sam|indent-paragraph ()
+(defun sam-indent-paragraph ()
   "Indent paragraph at point according to mode"
   (interactive)
   (save-excursion
@@ -266,13 +284,13 @@ Try the repeated popping up to 10 times."
     (indent-region (region-beginning) (region-end))))
 
 ;;;###autoload
-(defun sam|join-to-next-line ()
+(defun sam-join-to-next-line ()
   "Join current line to next line."
   (interactive)
   (join-line 4))
 
 ;;;###autoload
-(defun sam|duplicate-line ()
+(defun sam-duplicate-line ()
   "Duplicate the line containing point."
   (interactive)
   (save-excursion
@@ -288,7 +306,7 @@ Try the repeated popping up to 10 times."
       (insert line-text))))
 
 ;;;###autoload
-(defun sam|maximize-window ()
+(defun sam-maximize-window ()
   "Maximize frame on first use, toggle frame fullscreen on second
 consecutive use."
   (interactive)
@@ -304,7 +322,7 @@ consecutive use."
            (toggle-frame-maximized)))))
 
 ;;;###autoload
-(defun sam|main-window (&optional frame)
+(defun sam-main-window (&optional frame)
   "Refocus the main editing window.
 
 Delete all side windows at first use ; at second consecutive use
@@ -332,18 +350,18 @@ frame."
 
 
 ;;;###autoload
-(defun sam|google-scholar (beg end)
+(defun sam-google-scholar (beg end)
   (interactive "r")
   (let ((q (alist-get 'scholar sam-query-urls)))
     (funcall (sam--query-url q) beg end)))
 
 ;;;###autoload
-(defun sam|google (beg end)
+(defun sam-google (beg end)
   (interactive "r")
   (let ((q (alist-get 'google sam-query-urls)))
     (funcall (sam--query-url q) beg end)))
 
-(defun sam|wikipedia (beg end)
+(defun sam-wikipedia (beg end)
   (interactive "r")
   (let ((q (alist-get 'wiki sam-query-urls)))
     (funcall (sam--query-url q) beg end)))
@@ -406,25 +424,6 @@ frame."
   (let* ((cmd (format "circos")))
     (compile cmd)))
 
-(defun helm--load-theme-action (x)
-  "Disable current themes and load theme X."
-  (condition-case nil
-      (progn
-        (mapc #'disable-theme custom-enabled-themes)
-        (load-theme (intern x) t))
-    (error "Problem loading theme %s" x)))
-
-;;;###autoload
-(defun sam-load-theme ()
-  (interactive)
-  (helm
-   :sources (helm-build-sync-source "Themes"
-              :candidates (mapcar 'symbol-name (custom-available-themes))
-              :fuzzy-match t
-              :action (helm-make-actions
-                       "Load theme" #'helm--load-theme-action))
-   :buffer "*helm themes*"))
-
 ;;;###autoload
 (defun sam-ktb ()
   "Kill the current buffer without asking for it first."
@@ -446,10 +445,135 @@ frame."
   (interactive)
   (find-file "/ssh:samuel.barreto@ibio.univ-lyon1.fr:/home/pers/samuel.barreto/"))
 
+;; TODO: make this work over tramp or something
+(defun sam-rsync-ibio (fap)
+  (interactive
+   (list
+    (dired-filename-at-point)))
+  (let ((tgt "samuel.barreto@umr5557-baloo.univ-lyon1.fr:/home_nfs/pers/samuel.barreto/dump/"))
+    (message (format "rsync -avz -e ssh %s %s" fap tgt))))
+
 ;;;###autoload
 (defun sam-switch-to-compilation ()
   "Switch to the current compilation buffer"
   (interactive)
   (switch-to-buffer "*compilation*"))
 
+(defun sam--empty-line? (arg)
+  (save-excursion
+    (forward-line arg)
+    (and (bolp) (eolp))))
+
+(defun sam-brush-up ()
+  "Really open a new line."
+  (interactive)
+  (unless (eolp) (end-of-line))
+  (cond ((sam--empty-line? +1)
+         (forward-line 1)
+         (sam-brush-up))
+        ((not (sam--empty-line? -1))
+         (newline)
+         (sam-brush-up))
+        (t (open-line 1))))
+
+(sam-defaliases
+  'change-log-add-entry #'add-change-log-entry
+  'change-log-add-entry-other-window #'add-change-log-entry-other-window)
+
+(defun sam-defill-paragraph ()
+  (interactive)
+  (save-excursion
+    (sam-unfill-paragraph)
+    (save-restriction
+      (mark-paragraph)
+      (narrow-to-region (point) (mark))
+      (while (not (eobp))
+        (forward-sentence)
+        (when (sam--empty-line? 1)
+          (newline-and-indent))))))
+
+(defun sam-defill-buffer ()
+  (interactive)
+  (while (not (eobp))
+    (sam-defill-paragraph)
+    (forward-paragraph)))
+
+;; https://github.com/Fuco1/.emacs.d/blob/af82072196564fa57726bdbabf97f1d35c43b7f7/site-lisp/redef.el#L20-L94
+(defun sam-lisp-indent-function (indent-point state)
+  "This function is the normal value of the variable `lisp-indent-function'.
+The function `calculate-lisp-indent' calls this to determine
+if the arguments of a Lisp function call should be indented specially.
+
+INDENT-POINT is the position at which the line being indented begins.
+Point is located at the point to indent under (for default indentation);
+STATE is the `parse-partial-sexp' state for that position.
+
+If the current line is in a call to a Lisp function that has a non-nil
+property `lisp-indent-function' (or the deprecated `lisp-indent-hook'),
+it specifies how to indent.  The property value can be:
+
+* `defun', meaning indent `defun'-style
+  \(this is also the case if there is no property and the function
+  has a name that begins with \"def\", and three or more arguments);
+
+* an integer N, meaning indent the first N arguments specially
+  (like ordinary function arguments), and then indent any further
+  arguments like a body;
+
+* a function to call that returns the indentation (or nil).
+  `lisp-indent-function' calls this function with the same two arguments
+  that it itself received.
+
+This function returns either the indentation to use, or nil if the
+Lisp function does not specify a special indentation."
+  (let ((normal-indent (current-column))
+        (orig-point (point)))
+    (goto-char (1+ (elt state 1)))
+    (parse-partial-sexp (point) calculate-lisp-indent-last-sexp 0 t)
+    (cond
+     ;; car of form doesn't seem to be a symbol, or is a keyword
+     ((and (elt state 2)
+           (or (not (looking-at "\\sw\\|\\s_"))
+               (looking-at ":")))
+      (if (not (> (save-excursion (forward-line 1) (point))
+                  calculate-lisp-indent-last-sexp))
+          (progn (goto-char calculate-lisp-indent-last-sexp)
+                 (beginning-of-line)
+                 (parse-partial-sexp (point)
+                                     calculate-lisp-indent-last-sexp 0 t)))
+      ;; Indent under the list or under the first sexp on the same
+      ;; line as calculate-lisp-indent-last-sexp.  Note that first
+      ;; thing on that line has to be complete sexp since we are
+      ;; inside the innermost containing sexp.
+      (backward-prefix-chars)
+      (current-column))
+     ((and (save-excursion
+             (goto-char indent-point)
+             (skip-syntax-forward " ")
+             (not (looking-at ":")))
+           (save-excursion
+             (goto-char orig-point)
+             (looking-at ":")))
+      (save-excursion
+        (goto-char (+ 2 (elt state 1)))
+        (current-column)))
+     (t
+      (let ((function (buffer-substring (point)
+                                        (progn (forward-sexp 1) (point))))
+            method)
+        (setq method (or (function-get (intern-soft function)
+                                       'lisp-indent-function)
+                         (get (intern-soft function) 'lisp-indent-hook)))
+        (cond ((or (eq method 'defun)
+                   (and (null method)
+                        (> (length function) 3)
+                        (string-match "\\`def" function)))
+               (lisp-indent-defform state indent-point))
+              ((integerp method)
+               (lisp-indent-specform method state
+                                     indent-point normal-indent))
+              (method
+               (funcall method indent-point state))))))))
+
 (provide 'sam-helpers)
+;;; sam-helpers.el ends here

@@ -1,4 +1,32 @@
-;;; Defaults
+;;; samuelbarreto.el --- personal configuration      -*- lexical-binding: t; -*-
+
+;; Copyright (C) 2019  Samuel Barreto
+
+;; Author: Samuel Barreto <samuel.barreto8@gmail.com>
+;; Keywords: config
+
+;; This program is free software; you can redistribute it and/or modify
+;; it under the terms of the GNU General Public License as published by
+;; the Free Software Foundation, either version 3 of the License, or
+;; (at your option) any later version.
+
+;; This program is distributed in the hope that it will be useful,
+;; but WITHOUT ANY WARRANTY; without even the implied warranty of
+;; MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+;; GNU General Public License for more details.
+
+;; You should have received a copy of the GNU General Public License
+;; along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+;;; Commentary:
+
+;;
+
+;;; Code:
+
+
+
+;;;; Defaults
 
 (use-package no-littering
   :commands (no-littering-expand-var-file-name
@@ -12,13 +40,14 @@
   :load-path "~/.emacs.d/lisp/"
   :commands (sam-initialize!)
   :custom
-  (sam-font "Input Mono Narrow")
+  (sam-font "Unifont")
   (sam-variable-pitch-font "Input Sans Narrow")
+  (sam-use-variable-pitch-font nil)
   (sam-theme 'zenburn)
   :init
   (sam-initialize!))
 
-;;; Packages
+;;;; Packages
 
 (use-package abbrev
   :hook (text-mode-hook . abbrev-mode)
@@ -56,41 +85,11 @@
              auto-insert-mode))
 
 
-(use-package avy
-  :commands (avy-goto-word-or-subword-1
-             avy-goto-word-1
-             avy-goto-char-in-line
-             avy-goto-line
-             avy-goto-char
-             avy-resume)
-  :config
-  (key-seq-define-global "qé" #'avy-resume)
-  (key-seq-define-global "qp" #'avy-goto-word-1)
-  (key-seq-define-global "qe" #'avy-goto-char-in-line)
-  (key-seq-define-global "ql" #'avy-goto-line)
-  (setq avy-keys '(?a ?t ?u ?s ?i ?r ?e ?n ?p ?d ?é ?l))
-  (setq avy-all-windows nil)
-  (setq avy-styles-alist
-        '((avy-goto-char-in-line . post)
-          (avy-goto-word-or-subword-1 . post)
-          (avy-goto-word-1 . pre))))
-
-
 (use-package bicycle
   :after outline
   :bind (:map outline-minor-mode-map
-              ("s-i" . bicycle-cycle)
-              ([S-tab] . bicycle-cycle-global)))
-
-
-(use-package buff-menu
-  :bind* (("C-x b" . list-buffers)
-          :map Buffer-menu-mode-map
-          ("RET" . Buffer-menu-other-window))
-  :commands (Buffer-menu-toggle-files-only)
-  :config
-  (add-hook! 'Buffer-menu-mode-hook
-    (Buffer-menu-toggle-files-only 1)))
+         ("s-i" . bicycle-cycle)
+         ([S-tab] . bicycle-cycle-global)))
 
 
 (use-package comment-dwim-2
@@ -100,19 +99,15 @@
 (use-package compile
   :commands (compile)
   :bind (:map compilation-mode-map
-              ("t" . compilation-next-error)
-              ("s" . compilation-previous-error)
-              ("r" . compile-goto-error)))
-
+         ("t" . compilation-next-error)
+         ("s" . compilation-previous-error)
+         ("r" . compile-goto-error)))
 
 
 (use-package conf-mode
   :mode (("DESCRIPTION" . conf-mode)
          ("\\.log\\'" . conf-mode)
          ("\\.toml\\'" . conf-toml-mode)))
-
-
-
 
 (use-package counsel
   :commands (counsel-load-theme
@@ -154,118 +149,12 @@
   :load-path "/Users/samuelbarreto/dotfile/emacs/private/dcf/"
   :mode (("DESCRIPTION" . debian-control-mode)))
 
-
-(use-package dired
-  :bind* (("C-x d" . dired-other-window)
-          ("C-x C-d" . dired-side))
-  :defines (ls-lisp-use-insert-directory-program)
-  :commands (dired
-             dired-view-other-window
-             dired-side
-             dired-get-file-for-visit
-             dired-noselect
-             dired-hide-details-mode
-             dired-next-line
-             dired-previous-line
-             dired-find-file
-             dired-up-directory)
-  :functions (dired-side
-              dired-mkdir-date
-              dired-mkdir-date-rstyle)
-  :config
-  (defun dired-side ()
-    "Display `default-directory' in side window on left, hiding details."
-    (interactive)
-    (let ((buffer (dired-noselect default-directory)))
-      (with-current-buffer buffer (dired-hide-details-mode t))
-      (display-buffer-in-side-window
-       buffer  `((side          . left)
-                 (slot          . 0)
-                 (window-width  . 20)
-                 (preserve-size . (t . nil)) ,sam--parameters))))
-
-  (let ((gls "/usr/local/bin/gls"))
-    (if (file-exists-p gls)
-        (setq insert-directory-program gls)))
-
-  (setq ls-lisp-use-insert-directory-program t)
-  (setq dired-listing-switches "-alh")
-  (setq dired-dwim-target t) ; guess copy target based on other dired window
-
-  (defun dired-view-other-window ()
-    "View the current file in another window (possibly newly created)."
-    (interactive)
-    (if (not (window-parent))
-        (split-window))
-    (let ((file (dired-get-file-for-visit))
-          (dbuffer (current-buffer)))
-      (other-window 1)
-      (unless (equal dbuffer (current-buffer))
-        (if (or view-mode (equal major-mode 'dired-mode))
-            (kill-buffer)))
-      (let ((filebuffer (get-file-buffer file)))
-        (if filebuffer
-            (switch-to-buffer filebuffer)
-          (view-file file))
-        (other-window -1))))
-
-  (defun dired-mkdir-date (dir-name)
-    "Make a directory with current date style"
-    (interactive "sDirectory content: ")
-    (mkdir (format "%s-%s" (format-time-string "%Y-%m-%d" (current-time)) dir-name))
-    (revert-buffer))
-
-  (defun dired-mkdir-date-rstyle (dir-name)
-    (interactive "sDirectory content: ")
-    (mkdir (format "%s.%s" dir-name (format-time-string "%Y%m%d" (current-time))))
-    (revert-buffer))
-
-  (defun dired-mktemp ()
-    (interactive)
-    (mkdir (format ".tmp-%s" (format-time-string "%F-%H%M%S")))
-    (revert-buffer)
-    (dired-omit-mode -1))
-
-  (bind-keys
-   :map dired-mode-map
-   ("SPC" . dired-view-other-window)
-   ("C-+" . dired-mktemp)
-   ("H"   . dired-omit-mode)
-   ("h"   . dired-omit-mode)
-   ("t"   . dired-next-line)
-   ("s"   . dired-previous-line)
-   ("r"   . dired-find-file)
-   ("c"   . dired-up-directory)
-   ("8"   . dired-mkdir-date)
-   ("9"   . dired-mkdir-date-rstyle)
-   ("O"   . sam|open-in-external-app)
-   ("C-'" . shell)
-   ("q"   . (lambda () (interactive) (quit-window 4)))))
-
-(use-package dired-x
-  :after dired
-  :bind* (("C-x C-'" . dired-jump))
-  :commands (dired-omit-mode)
-  :init
-  (add-hook! 'dired-load-hook
-    (load "dired-x"))
-  (add-hook! 'dired-mode-hook
-    (dired-omit-mode))
-  :config
-  (setq dired-omit-verbose nil)
-  (setq dired-omit-extensions
-        (cl-list* ".aux" ".fls" ".log" ".out" ".toc" ".fdb_latexmk" ".bbl" ".blg" ".bcf" ".run.xml" ".x" ".d" dired-omit-extensions))
-  (setq dired-omit-files (concat dired-omit-files
-                                 "\\|^\\..*$\\|^.DS_Store$\\|^.projectile$\\|^.git$")))
-
-
-
 (use-package elfeed-org
-    :commands (elfeed-org)
-    :init
-    (setq rmh-elfeed-org-files (list "~/dotfile/emacs/elfeed.org"))
-    :config
-    (elfeed-org))
+  :commands (elfeed-org)
+  :custom
+  (rmh-elfeed-org-files (list "~/dotfile/emacs/elfeed.org"))
+  :config
+  (elfeed-org))
 
 (use-package elfeed
   :functions (elfeed-next-tag
@@ -355,7 +244,10 @@
 (use-package elisp-mode
   :functions (use-package-jump)
   :bind (:map emacs-lisp-mode-map
-              ("A-j" . use-package-jump))
+         ("A-j" . use-package-jump))
+  :init
+  (add-hook! 'emacs-lisp-mode-hook
+    (setq-local lisp-indent-function #'sam-lisp-indent-function))
   :config
   (defun use-package-jump--list-calls ()
     (let ((packages))
@@ -400,14 +292,14 @@
                               (ess-R-fl-keyword:F&T . t)
                               (ess-R-fl-keyword:%op% . t)))
   :bind* (:map ess-mode-map
-               ("RET" . ess-newline-and-indent)
-               ("S-<return>" . ess-eval-line)
-               ("C-RET" . ess-eval-region-or-line)
-               ("M-RET" . ess-eval-function-or-paragraph)
-               ("C-c M-s" . ess-switch-process)
-               ("_" . self-insert-command)
-               (" " . ess-insert-assign)
-               (" " . ess-insert-assign))
+          ("RET" . ess-newline-and-indent)
+          ("S-<return>" . ess-eval-line)
+          ("C-RET" . ess-eval-region-or-line)
+          ("M-RET" . ess-eval-function-or-paragraph)
+          ("C-c M-s" . ess-switch-process)
+          ("_" . self-insert-command)
+          (" " . ess-insert-assign)
+          (" " . ess-insert-assign))
   :config
   (add-hook! 'ess-mode-hook
     (setq-local outline-regexp "^## \\*"))
@@ -492,18 +384,6 @@ Totos   : _C-n_: next / _C-p_: prev / _C-s_: search"
 
 (use-package ggo-mode
   :mode ("\\.ggo\\'" . ggo-mode))
-
-
-(use-package goto-addr
-  :hook ((compilation-mode . goto-address-mode)
-         (prog-mode . goto-address-prog-mode)
-         (eshell-mode . goto-address-mode)
-         (shell-mode . goto-address-mode))
-  :bind (:map goto-address-highlight-keymap
-              ("<RET>" . goto-address-at-point)
-              ("M-<RET>" . newline))
-  :commands (goto-address-prog-mode
-             goto-address-mode))
 
 
 (use-package grab-mac-link
@@ -772,13 +652,6 @@ abort completely with `C-g'."
   (key-chord-mode 1))
 
 
-(use-package keyfreq
-  :commands (keyfreq-mode
-             keyfreq-autosave-mode)
-  :config
-  (keyfreq-autosave-mode 1))
-
-
 (use-package key-seq
   :after key-chord
   :commands (key-seq-define-global
@@ -834,7 +707,7 @@ abort completely with `C-g'."
 (use-package magit-gitflow
   :after magit
   :bind (:map magit-mode-map
-              ("%" . magit-gitflow-popup))
+         ("%" . magit-gitflow-popup))
   :commands (turn-on-magit-gitflow)
   :config
   (add-hook! 'magit-mode-hook
@@ -913,9 +786,9 @@ abort completely with `C-g'."
   :commands (camp-minor-mode)
   :hook (emacs-lisp-mode . camp-minor-mode)
   :bind (:map outline-minor-mode-map
-         ("o" . camp-outline))
-  :config
-  (define-key org-mode-map (kbd "t") #'camp-text))
+         ("o" . camp-outline)
+         :map org-mode-map
+         ("t" . camp-text)))
 
 (use-package minions
   :hook (after-init . minions-mode))
@@ -930,87 +803,6 @@ abort completely with `C-g'."
   (moody-replace-vc-mode))
 
 
-(use-package mu4e
-  :load-path "/usr/local/share/emacs/site-lisp/mu4e/"
-  :bind* (("<f5>" . mu4e)
-          :map mu4e-main-mode-map
-          ("n" . next-line)
-          ("p" . previous-line)
-          :map mu4e-compose-mode-map
-          ("M-q" . nil)
-          :map mu4e-headers-mode-map
-          ("s-c" . mu4e-headers-query-prev)
-          ("s-r" . mu4e-headers-query-next))
-  :custom
-  (mu4e-mu-binary "/usr/local/bin/mu")
-  (mu4e-html2text-command "textutil -stdin -format html -convert txt -stdout")
-  (mu4e-maildir "~/Maildir/")
-  (mu4e-drafts-folder "/drafts")
-  (mu4e-sent-folder "/sent")
-  (mu4e-trash-folder "/trash")
-  (mu4e-get-mail-command "mbsync -a")
-  (mu4e-headers-auto-update t)
-  (mu4e-use-fancy-chars nil)
-  (mu4e-confirm-quit nil)
-  (mu4e-compose-format-flowed nil)
-  (mu4e-compose-dont-reply-to-self t)
-  (mu4e-attachment-dir "~/Downloads")
-  (mu4e-user-mail-address-list '("samuel.barreto8@gmail.com"
-                                 "samuel.barreto@univ-lyon1.fr"))
-  (mu4e-maildir-shortcuts '(("/gmail/inbox" . ?i)
-                            ("/univ/inbox"  . ?u)
-                            ("/sent"        . ?s)
-                            ("/trash"       . ?t)
-                            ("/drafts"      . ?d)))
-  (mu4e-bookmarks `(("date:today..now AND NOT flag:trashed" "Today" ,?t)
-                    ("flag:unread AND NOT flag:trashed" "Unread" ,?s)
-                    ("date:7d..now AND NOT flag:trashed" "Week" ,?r)
-                    ("maildir:/univ/inbox" "Univ" ,?n)
-                    ("maildir:/gmail/inbox" "Gmail" ,?m)))
-  (mu4e-compose-reply-to-address "samuel.barreto8@gmail.com")
-  (mu4e-view-show-images t)
-
-  :init
-  (add-hook! 'message-mode-hook
-    (turn-on-orgtbl))
-
-  :config
-  ;; use mu4e as emacs default mail program
-  (setq user-mail-address "samuel.barreto8@gmail.com"
-        user-full-name "Samuel Barreto")
-
-  ;; use imagemagick, if available
-  (when (fboundp 'imagemagick-register-types)
-    (imagemagick-register-types))
-
-  ;; view mail in browser if possible
-  (add-to-list
-   'mu4e-view-actions
-   '("browser" . mu4e-action-view-in-browser) t))
-
-(use-package message
-  :after mu4e
-  :custom
-  (message-send-mail-function 'message-send-mail-with-sendmail)
-  ;; tell msmtp to choose the smtp server according to the from field
-  (message-send-mail-extra-arguments '("--read-envelope-from"))
-  (message-sendmail-f-is-evil 't)
-  :hook
-  (message-mode . turn-on-orgtbl))
-
-(use-package sendmail
-  :after mu4e
-  :custom
-  (sendmail-program "/usr/local/bin/msmtp"))
-
-(use-package smtpmail
-  :after mu4e)
-
-(use-package mwim
-  :bind* (("C-a" . mwim-beginning)
-          ("C-e" . mwim-end)))
-
-
 (use-package nim-mode
   :mode ("\\.nim\\'" . nim-mode))
 
@@ -1018,303 +810,6 @@ abort completely with `C-g'."
   :after nim-mode
   :hook ((nim-mode . nimsuggest-mode)
          (nimsuggest-mode . flymake-mode)))
-
-
-(use-package org
-  :commands (org-make-link-string
-             org-next-visible-heading
-             org-previous-visible-heading
-             org-display-inline-images
-             org-remove-inline-images
-             org-toggle-inline-images
-             org-get-buffer-tags)
-  :mode (("\\.org\\'" . org-mode)
-         ("README\\'"   . org-mode))
-  :bind* (("C-c C-w" . org-refile)
-          ("C-c C-l" . org-store-link)
-          ("C-M-c"   . org-capture)
-          :map org-mode-map
-          ("s-e"     . org-babel-tangle-all-block-same-file)
-          ("s-l"     . org-latex-export-to-latex)
-          ("C-c ."   . org-time-stamp)
-          ("C-c M-i" . org-insert-link)
-          ("C-c m"   . hydra-org-image/body)
-          ("C-c $"   . hydra-org-archive/body)
-          ("C-c e d" . org-decrypt-entry)
-          ("C-c e e" . org-encrypt-entry)
-          ("C-c e s" . org-sparse-tree)
-          ("C-c e t" . org-tags-sparse-tree))
-  :custom
-  ;; activate speed commands when on any outline star
-  (org-use-speed-commands
-   (lambda () (and (looking-at org-outline-regexp)
-              (looking-back "^\**" (1- (point))))))
-  (org-indirect-buffer-display 'current-window)
-  ;; make symlink instead of hard copy
-  (org-attach-method 'lns)
-  ;; delete attachment when archiving entry
-  (org-attach-archive-delete t)
-  ;; change folder from data/ to .attach/
-  (org-attach-directory ".attach/")
-  (org-tags-column 80)
-  (org-hide-block-startup t)
-  (org-refile-targets '(("~/these/meta/nb/These.org" :level . 2)
-                        ("~/Org/TODO" :level . 2)
-                        ("~/Org/TODO" :level . 1)
-                        ("~/these/meta/nb/maybe.org" :level . 1)
-                        ("~/Org/maybe.org" :level . 1)))
-  (org-default-notes-file "~/Org/notes.org")
-
-  (org-todo-keywords
-   '((sequence "TODO(t)" "WAIT(w)" "|" "DONE(d)" "CANCELLED(c)")))
-  (org-enforce-todo-dependencies t)
-  (org-link-abbrev-alist
-   '(("wiki" . "https://en.wikipedia.org/wiki/%h")
-     ("gsc"  . "https://scholar.google.com/scholar?q=%h")
-     ("sep"  . "https://plato.stanford.edu/search/search?query=%h")
-     ("etym" . "http://www.cnrtl.fr/etymologie/%h")
-     ("bu"   . "http://hola.univ-lyon1.fr/ipac20/ipac.jsp?menu=search&aspect=basic_search&npp=10&ipp=20&spp=20&profile=scd&ri=&index=.GK&term=%h&terms=&valider=Ok")))
-  (org-crypt-disable-auto-save t)
-  (org-src-preserve-indentation t)
-  (org-footnote-auto-adjust t)
-  (org-footnote-define-inline nil)
-  (org-footnote-fill-after-inline-note-extraction t)
-  (org-footnote-section nil)
-  (org-export-with-todo-keywords nil)
-  (org-export-default-language "fr")
-  (org-export-backends '(ascii html icalendar latex md))
-  (org-export-with-tags nil)
-  (org-startup-with-inline-images t)
-  (org-startup-indented nil)
-  (org-image-actual-width '(400))
-  :config
-
-  (setq org-modules '(org-crypt))
-
-  (defhydra hydra-org-archive (:color red :columns 1)
-    ("a" org-archive-subtree "archive")
-    ("n" org-next-visible-heading "next")
-    ("t" org-next-visible-heading "next")
-    ("p" org-previous-visible-heading "previous")
-    ("s" org-previous-visible-heading "previous"))
-
-  (defhydra hydra-org-image (:color red :hint nil)
-    "
-Display inline images ?
-_y_es  _n_o    _t_oggle
-"
-    ("y" org-display-inline-images)
-    ("n" org-remove-inline-images)
-    ("t" org-toggle-inline-images))
-
-  (defun org-babel-tangle-all-block-same-file ()
-    "tangle all blocks which belong to the same file."
-    (interactive)
-    (let ((current-prefix-arg '(16)))
-      (call-interactively #'org-babel-tangle))))
-
-
-(use-package org-agenda
-  :bind* (("C-c a" . org-agenda))
-  :custom (org-agenda-window-setup 'current-window)
-  :config
-
-  ;; inspired from  http://pages.sachachua.com/.emacs.d/Sacha.html#orgce6f46d
-  (setq org-agenda-files
-        (list "~/Org/TODO"
-              "~/these/meta/nb/These.org"))
-
-  (setq org-capture-use-agenda-date t) ; when press k from agenda, use agenda date.
-  (setq org-agenda-span 7)
-  (setq org-agenda-tags-column -100) ; take advantage of the screen width
-  (setq org-agenda-skip-scheduled-if-done t)
-  (setq org-agenda-skip-deadline-if-done t)
-  (setq org-deadline-warning-days 4)
-  (setq org-agenda-skip-deadline-prewarning-if-scheduled 'pre-scheduled)
-
-  ;; agenda start on mondays
-  (setq org-agenda-start-on-weekday 1)
-
-  (setq org-agenda-custom-commands
-        '(("c" "Simple agenda view"
-           ((agenda "")
-            (alltodo "")))
-          ("l" "Lab" tags-todo "@these"
-           ((org-agenda-files '("~/these/meta/nb/These.org"))
-            (org-agenda-sorting-strategy '(timestamp-up priority-up)))
-           ("~/these/meta/nb/These.html"))
-          ("p" "perso" tags "@perso"
-           ((org-agenda-sorting-strategy '(ts-up priority-up))))))
-
-  (setq org-agenda-include-diary nil))
-
-
-(use-package org-archive
-  :after org
-  :commands (org-archive-subtree))
-
-
-(use-package org-bullets
-  :hook
-  (org-mode . org-bullets-mode)
-  :custom
-  (org-bullets-bullet-list '("◉" "○" "◉" "○" "◉" "○")))
-
-
-(use-package org-capture
-  :bind* (("C-M-c" . org-capture))
-  :custom
-  (org-capture-templates
-   '(("t" "these - Todo"     entry (file+headline "~/these/meta/nb/These.org" "InBox"             ) "** %?\n%U")
-     ("l" "these - Lab"      entry (file+olp+datetree "~/these/meta/nb/journal.org"               ) "* %(hour-minute-timestamp) %?%^g\n")
-     ("r" "these - tickleR"  entry (file+headline "~/these/meta/nb/These.org" "Tickler"           ) "** %?\n%T")
-     ("a" "these - rapport"  entry (file+headline "~/these/these/notes-manuscrit.org" "Collecte"  ) "** %?\n%U")
-     ("c" "perso - Collecte" entry (file+headline "~/Org/TODO" "Collecte"                         ) "** %?\n%U\n")
-     ("n" "perso - Notes"    entry (file+olp+datetree "~/Org/journal.org"                         ) "* %(hour-minute-timestamp) %?%^g\n"))))
-
-
-(use-package org-download
-  :after org
-  :bind* (:map org-mode-map
-               ("C-c y e" . org-download-edit)
-               ("C-c y e" . org-download-edit)
-               ("C-c y i" . org-download-image)
-               ("C-c y s" . org-download-screenshot)
-               ("C-c y y" . org-download-yank)
-               ("C-c y k" . org-download-delete))
-  :config
-  (defvar sam|org-download-dir "./img/"
-    "Default folder to place `org-download' captures in.")
-
-  (defun sam|img-dir ()
-    (let (target sam|org-download-dir)
-      (cond ((file-directory-p target) target)
-            (t (make-directory target) target))))
-
-  (setq-default org-download-heading-lvl nil)
-  (setq-default org-download-image-dir sam|org-download-dir)
-  (when (eq system-type 'darwin)
-    (setq-default org-download-screenshot-method "screencapture -i %s")))
-
-
-(use-package org-web-tools
-  :commands (org-web-tools-insert-link-for-url
-             org-web-tools-insert-web-page-as-entry
-             org-web-tools-read-url-as-org
-             org-web-tools-convert-links-to-page-entries))
-
-
-(use-package ob
-  :after org
-  :commands (org-babel-tangle))
-
-
-(use-package ob-R
-  :commands (org-babel-execute:R))
-
-(use-package ob-perl
-  :commands (org-babel-execute:perl))
-
-(use-package ob-python
-  :commands (org-babel-execute:python))
-
-(use-package ob-shell
-  :commands (org-babel-execute:shell))
-
-(use-package ob-emacs-lisp
-  :commands (org-babel-execute:emacs-lisp))
-
-(use-package ob-dot
-  :commands (org-babel-execute:dot))
-
-(use-package ob-makefile
-  :commands (org-babel-execute:makefile))
-
-(use-package ox-latex
-  :commands (org-latex-export-as-latex
-             org-latex-export-to-latex)
-  :config
-
-  (setq org-latex-listings 'minted)
-  (add-to-list 'org-latex-packages-alist '("" "listings"))
-  (add-to-list 'org-latex-packages-alist '("" "color"))
-  (add-to-list 'org-latex-packages-alist '("newfloat" "minted"))
-
-  (setq
-   ;; moyen d'export latex
-   org-latex-pdf-process
-   (list "lualatex -shell-escape -interaction nonstopmode -output-directory %o %f"
-         "biber %f"
-         "lualatex -shell-escape -interaction nonstopmode -output-directory %o %f")
-   org-latex-image-default-width "1\\linewidth"
-   org-highlight-latex-and-related '(latex entities) ; colore les macro LaTeX
-   ;; tufte-handout class by default.
-   org-latex-default-class "tant"
-   ;; default package list with sensible options
-   org-latex-default-packages-alist nil
-   org-latex-listings-langs
-   '((emacs-lisp "Lisp") (lisp "Lisp") (clojure "Lisp") (c "C") (cc "C++") (fortran "fortran")
-     (perl "Perl") (cperl "Perl") (python "Python") (ruby "Ruby") (html "HTML")
-     (xml "XML") (tex "TeX") (latex "[LaTeX]TeX") (shell-script "bash") (gnuplot "Gnuplot")
-     (ocaml "Caml") (caml "Caml") (sql "SQL") (sqlite "sql") (makefile "make")
-     (R "r"))
-   ;; files extensions that org considers as latex byproducts.
-   org-latex-logfiles-extensions
-   '("aux" "bcf" "blg" "fdb_latexmk" "fls" "figlist" "idx"
-     "log" "nav" "out" "ptc" "run.xml" "snm" "toc" "vrb" "xdv" "bbl")
-   org-latex-minted-langs '((emacs-lisp "common-lisp")
-                            (cc "c++")
-                            (cperl "perl")
-                            (shell-script "bash")
-                            (caml "ocaml")
-                            (python "python")
-                            (ess "R"))
-   org-latex-remove-logfiles t
-   org-src-fontify-natively t
-   org-latex-tables-booktabs t)
-
-  (append-to-list!
-   'org-latex-classes
-   '(("tant"
-      "\\documentclass[twoside,a4paper,10pt]{tant}
-% \\addbibresource{reference.bib}
-"
-      ;; ("\\part{%s}" . "\\part*{%s}")
-      ;; ("\\chapter{%s}" . "\\chapter*{%s}")
-      ("\\section{%s}" . "\\section*{%s}")
-      ("\\subsection{%s}" . "\\subsection*{%s}"))
-     ("tufte-book"
-      "\\documentclass[a4paper, sfsidenotes, justified, notitlepage]{tufte-book}
-       \\input{/Users/samuelbarreto/.templates/tufte-book.tex}"
-      ("\\part{%s}" . "\\part*{%s}")
-      ("\\chapter{%s}" . "\\chapter*{%s}")
-      ("\\section{%s}" . "\\section*{%s}")
-      ("\\subsection{%s}" . "\\subsection*{%s}"))
-     ("tufte-handout"
-      "\\documentclass[a4paper, justified]{tufte-handout}
-       \\input{/Users/samuelbarreto/.templates/tufte-handout.tex}"
-      ("\\section{%s}" . "\\section*{%s}")
-      ("\\subsection{%s}" . "\\subsection*{%s}"))
-     ("rapport" "\\documentclass[11pt, oneside]{scrartcl}"
-      ("\\section{%s}" . "\\section*{%s}")
-      ("\\subsection{%s}" . "\\subsection*{%s}")
-      ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
-     ("beamer" "\\documentclass[presentation]{beamer}"
-      ("\\section{%s}" . "\\section*{%s}")
-      ("\\subsection{%s}" . "\\subsection*{%s}")
-      ("\\subsubsection{%s}" . "\\subsubsection*{%s}"))
-     ("journal"
-      "\\documentclass[9pt, oneside, twocolumn]{scrartcl}
-       \\input{/Users/samuelbarreto/.templates/journal.tex}"
-      ("\\part{%s}" . "\\section*{%s}")
-      ("\\section{%s}" . "\\section*{%s}")
-      ("\\subsection{%s}" . "\\subsection*{%s}")
-      ("\\subsubsection{%s}" . "\\subsubsection*{%s}")
-      ("\\paragraph{%s}" . "\\paragraph*{%s}")))))
-
-(use-package ox-beamer
-  :commands (org-beamer-mode))
-
 
 (use-package outline
    :custom
@@ -1349,7 +844,7 @@ _y_es  _n_o    _t_oggle
 (use-package pathify
   :after dired
   :bind* (:map dired-mode-map
-               ("L" . pathify-dired))
+          ("L" . pathify-dired))
   :custom
   (pathify-directory "~/.local/bin/"))
 
@@ -1400,8 +895,8 @@ _y_es  _n_o    _t_oggle
               org-enwrap!
               selected-search)
   :bind (:map selected-keymap
-              ("a" . align-regexp)
-              ("A" . align)
+         ("a" . align-regexp)
+         ("A" . align)
          ("e" . er/expand-region)
          ("c" . er/contract-region)
          ("q" . selected-off)
@@ -1411,7 +906,7 @@ _y_es  _n_o    _t_oggle
          ("d" . downcase-region)
          ("w" . count-words-region)
          ("m" . apply-macro-to-region-lines)
-         ("n" . sam|narrow-or-widen-dwim)
+         ("n" . sam-narrow-or-widen-dwim)
          ("x" . kill-ring-save)
          ("X" . kill-region)
          :map selected-org-mode-map
@@ -1436,9 +931,9 @@ Search [g]oogle / google-[s]cholar / [w]ikipédia / (C-g) Escape"))
       (region-beginning)
       (region-end)))
     (pcase key
-      (?s (sam|google-scholar beg end))
-      (?g (sam|google beg end))
-      (?w (sam|wikipedia beg end))
+      (?s (sam-google-scholar beg end))
+      (?g (sam-google beg end))
+      (?w (sam-wikipedia beg end))
       (?\C-g nil)
       (_ (call-interactively 'selected-search)))))
 
@@ -1561,10 +1056,6 @@ frame.
 (use-package smex)
 
 
-(use-package solarized
-  :demand t)
-
-
 (use-package spotlight
   :bind* (("C-c C-s" . spotlight)
           ("C-c C-S-s" . spotlight-fast))
@@ -1610,6 +1101,8 @@ frame.
 
 (use-package visual-fill-column
   :commands (visual-fill-column-mode)
+  :custom
+  (visual-fill-column-width 62)
   :init
   (add-hook! 'visual-fill-column-mode-hook
     (visual-line-mode +1)
@@ -1622,16 +1115,17 @@ frame.
   :commands (which-key-mode
              which-key-setup-side-window-bottom
              which-key-add-key-based-replacements)
+  :custom
+  ;; simple then alphabetic order.
+  (which-key-sort-order 'which-key-prefix-then-key-order)
+  (which-key-popup-type 'side-window)
+  (which-key-side-window-max-height 0.3)
+  (which-key-side-window-max-width 0.5)
+  (which-key-idle-delay 0.3)
+  (which-key-min-display-lines 7)
   :config
   (which-key-mode)
   (which-key-setup-side-window-bottom)
-  ;; simple then alphabetic order.
-  (setq which-key-sort-order 'which-key-prefix-then-key-order)
-  (setq which-key-popup-type 'side-window
-        which-key-side-window-max-height 0.3
-        which-key-side-window-max-width 0.5
-        which-key-idle-delay 0.3
-        which-key-min-display-lines 7)
   ;; key description for C-x
   (which-key-add-key-based-replacements
     "C-x RET" "coding system -input"
@@ -1648,7 +1142,7 @@ frame.
     "C-c @"   "hide-show"
     "M-SPC h" "info"
     "M-SPC g" "grep"
-    "M-SPC M-s" "occur") )
+    "M-SPC M-s" "occur"))
 
 (use-package xterm-color
   :config
@@ -1682,67 +1176,13 @@ frame.
   :load-path "~/.emacs.d/lisp/")
 
 
-(use-package winner
-  :hook (after-init . winner-mode)
-  :commands (winner-undo
-             winner-redo)
-  :bind (("C-c <left>" . hydra-winner/winner-undo)
-         ("C-c <right>" . hydra-winner/winner-redo))
-  :config
-  (defhydra hydra-winner (:color red :hint nil)
-    ("<left>" winner-undo "undo")
-    ("<right>" winner-redo "redo")))
+;;;; Personnal functions
 
-
-(use-package zenburn-theme
-  :no-require t
-  :defer t)
-
-;;; Personnal functions
-
-(use-package sam-helpers
-  :load-path "~/.emacs.d/lisp/"
-  :demand t
-  :commands (use-package-jump)
-  :bind* (("H-'"     . sam|iterm-here)
-          ("H-l"     . sam|duplicate-line)
-          ("H-o"     . sam|reveal-in-finder)
-          ("H-w"     . sam|maximize-window)
-          ("s-<tab>" . sam|switch-to-other-buffer)
-          ("s-I"     . sam|indent-paragraph)
-          ("s-j"     . sam|join-to-next-line)
-          ("s-n"     . sam|narrow-or-widen-dwim)
-          ("s-o"     . sam|open-in-external-app)
-          ("s-q"     . sam|unfill-paragraph)
-          ("s-w"     . sam|main-window)
-          ("ð"       . sam|kill-word-at-point)
-          ("s-C"     . sam-switch-to-compilation)
-          ("C-x n"   . sam|narrow-or-widen-dwim)))
-
-;;; keybindings
-
-(use-package bind-key
-  :config
-  (bind-keys*
-   ("C-/"           . complete-symbol)
-   ("C-S-k"         . kill-whole-line)
-   ("C-x |"         . split-window-right)
-   ("C-x ="         . balance-windows)
-   ("C-x M-c"       . compile)
-   ("M-SPC"         . cycle-spacing)
-   ("M-«"           . beginning-of-buffer)
-   ("M-»"           . end-of-buffer)
-   ("M-s-n"         . forward-paragraph)
-   ("M-s-p"         . backward-paragraph)
-   ("s-c"           . clone-indirect-buffer-other-window)
-   ("s-d"           . kill-buffer-and-window)
-   ("s-u"           . negative-argument)
-   ("H-n"           . make-frame)
-   ("H-u"           . revert-buffer)
-   ("H-<backspace>" . switch-to-buffer-other-window)
-   ("H-M-p"         . scroll-up-command)
-   ("H-M-n"         . scroll-down-command)
-   ("H-M-s"         . mark-sexp)))
+(use-package sam
+  :load-path "~/.emacs.d/lisp/")
 
 (add-hook! 'after-init
   (load (no-littering-expand-etc-file-name "custom.el")))
+
+(provide 'samuelbarreto)
+;;; samuelbarreto.el ends here

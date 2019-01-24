@@ -1,9 +1,9 @@
-;;; sam.el --- personal package                      -*- lexical-binding: t; -*-
+;;; sam-ess.el --- helpers for ess                   -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Samuel Barreto
 
 ;; Author: Samuel Barreto <samuel.barreto8@gmail.com>
-;; Keywords: conv
+;; Keywords: ess, stats, Rstat
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -24,21 +24,12 @@
 
 ;;; Code:
 
-(defgroup sam nil
-  "Personal function and keybindings"
-  :prefix "sam-"
-  :group 'lisp)
+;; TODO: [2019-01-21 12:49] define a function that insert the result
+;; into the current buffer.
+(defun sam-ess-eval-insert (&optional arg)
+  (interactive "p")
+  (if (> arg 0)
+      ()))
 
-(require 'sam-utils)
-(require 'sam-viridis)
-(require 'sam-helpers)
-(require 'sam-dired)
-(require 'sam-keybindings)
-(require 'sam-org)
-(require 'sam-mail)
-(require 'sam-themes)
-
-
-
-(provide 'sam)
-;;; sam.el ends here
+(provide 'sam-ess)
+;;; sam-ess.el ends here

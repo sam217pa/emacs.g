@@ -20,20 +20,24 @@
 
 ;;; Commentary:
 
-;;
+;; This file gathers keybindings of mine. The goal is to work towards
+;; a more granular approach than a single big init file that can't be
+;; compiled without taking ages.
 
 ;;; Code:
 
 (require 'bind-key)
 (require 'sam-utils)
 
+;;;###autoload
 (defmacro sam-defkeys (&rest args)
   "Bind each key-function bindings in ARGS using `bind-keys*'.
 Nicer wrapper."
   (declare (indent 0))
-  `(bind-keys* ,@(mapcar
-                  (lambda (kf) `(,(car kf) . ,(intern (symbol-name (cadadr kf)))))
-                  (sam--group args 2))))
+  `(bind-keys*
+    ,@(mapcar
+       (lambda (kf) `(,(car kf) . ,(intern (symbol-name (cadadr kf)))))
+       (sam--group args 2))))
 
 (sam-defkeys
  "C-/"            'complete-symbol
@@ -64,6 +68,22 @@ Nicer wrapper."
   "H-t" 'scroll-down
   "H-s" 'scroll-up)
 
+
+(sam-defkeys
+  "H-'"     'sam-iterm-here
+  "H-l"     'sam-duplicate-line
+  "H-o"     'sam-reveal-in-finder
+  "H-w"     'sam-maximize-window
+  "s-<tab>" 'sam-switch-to-other-buffer
+  "s-I"     'sam-indent-paragraph
+  "s-j"     'sam-join-to-next-line
+  "s-n"     'sam-narrow-or-widen-dwim
+  "s-o"     'sam-open-in-external-app
+  "s-q"     'sam-unfill-paragraph
+  "s-w"     'sam-main-window
+  "ð"       'sam-kill-word-at-point
+  "s-C"     'sam-switch-to-compilation
+  "C-x n"   'sam-narrow-or-widen-dwim)
 
 
 (provide 'sam-keybindings)
