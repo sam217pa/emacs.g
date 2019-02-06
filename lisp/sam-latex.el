@@ -1,9 +1,9 @@
-;;; sam.el --- personal package                      -*- lexical-binding: t; -*-
+;;; sam-latex.el --- latex editing                   -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Samuel Barreto
 
 ;; Author: Samuel Barreto <samuel.barreto8@gmail.com>
-;; Keywords: conv
+;; Keywords: latex, tex
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -24,21 +24,14 @@
 
 ;;; Code:
 
-(defgroup sam nil
-  "Personal function and keybindings"
-  :prefix "sam-"
-  :group 'lisp)
+;; this is the "hook" function
+(defun sam-latex-dont-insert-expansion-char ()  t)
+;; the hook should have a "no-self-insert"-property set
+(put 'sam-latex-dont-insert-expansion-char 'no-self-insert t)
 
-(require 'sam-utils)
-(require 'sam-viridis)
-(require 'sam-helpers)
-(require 'sam-dired)
-(require 'sam-keybindings)
-(require 'sam-todo)
-(require 'sam-org)
-(require 'sam-mail)
-(require 'sam-themes)
-(require 'sam-autoinsert)
+(define-abbrev-table 'latex-mode-abbrev-table
+  '(("em" "\\emph{" sam-latex-dont-insert-expansion-char 0)))
 
-(provide 'sam)
-;;; sam.el ends here
+
+(provide 'sam-latex)
+;;; sam-latex.el ends here

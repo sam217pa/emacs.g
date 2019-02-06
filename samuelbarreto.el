@@ -38,14 +38,15 @@
 
 (use-package sam-defaults
   :load-path "~/.emacs.d/lisp/"
-  :commands (sam-initialize!)
   :custom
-  (sam-font "Unifont")
+  (sam-font "Unifont 14")
   (sam-variable-pitch-font "Input Sans Narrow")
   (sam-use-variable-pitch-font nil)
   (sam-theme 'zenburn)
   :init
-  (sam-initialize!))
+  (sam-initialize!)
+  :hook
+  (after-init . sam-initialize!))
 
 ;;;; Packages
 
@@ -151,8 +152,8 @@
 
 (use-package elfeed-org
   :commands (elfeed-org)
-  :custom
-  (rmh-elfeed-org-files (list "~/dotfile/emacs/elfeed.org"))
+  :init
+  (setq rmh-elfeed-org-files '("~/dotfile/emacs/elfeed.org"))
   :config
   (elfeed-org))
 
@@ -644,25 +645,6 @@ abort completely with `C-g'."
 :END:
 "))
 
-(use-package key-chord
-  :commands (key-chord-mode)
-  :custom
-  (key-chord-two-key-delay 0.2)
-  :init
-  (key-chord-mode 1))
-
-
-(use-package key-seq
-  :after key-chord
-  :commands (key-seq-define-global
-             key-seq-define)
-  :init
-  (key-seq-define-global "qd" #'sam-ktb)
-  (key-seq-define-global "qb" #'counsel-bookmark)
-  (key-seq-define-global "qf" #'kill-frame)
-  (key-seq-define-global "qw" #'kill-window)
-  (key-seq-define emacs-lisp-mode-map "$u" #'use-package-jump))
-
 
 (use-package lorem-ipsum
   :commands (lorem-ipsum-insert-list
@@ -695,9 +677,7 @@ abort completely with `C-g'."
          ("#" . lesspy-comment)
          ("'" . lesspy-roxigen)
          ("C" . lesspy-cleanup-pipeline)
-         ("C-d" . lesspy-kill-forward)
-         ("C-(" . lesspy-paren-wrap-next)
-         ("DEL" . lesspy-kill-backward)))
+         ("C-(" . lesspy-paren-wrap-next)))
 
 
 (use-package lua-mode
@@ -780,15 +760,6 @@ abort completely with `C-g'."
   :mode ("\\.md\\'" . markdown-mode)
   :hook (markdown-mode . outline-minor-mode))
 
-
-(use-package camp
-  :load-path "~/dotfile/emacs/private/minimenu/"
-  :commands (camp-minor-mode)
-  :hook (emacs-lisp-mode . camp-minor-mode)
-  :bind (:map outline-minor-mode-map
-         ("o" . camp-outline)
-         :map org-mode-map
-         ("t" . camp-text)))
 
 (use-package minions
   :hook (after-init . minions-mode))
@@ -968,6 +939,18 @@ frame.
             (comint-send-input))
           (recenter 0))))))
 
+
+(use-package shelter
+  :load-path "~/dotfile/emacs/private/shelter/"
+  :commands (camp-minor-mode
+             fort-minor-mode)
+  :custom
+  (shelter-text-remap-sentence-navigation t)
+  :hook ((scheme-mode . shelter-mode)
+         (emacs-lisp-mode . shelter-mode)
+         (ess-mode . shelter-mode)))
+
+
 (use-package slime
   :custom
   (inferior-lisp-program "/usr/local/bin/sbcl --noinform"))
@@ -1102,7 +1085,7 @@ frame.
 (use-package visual-fill-column
   :commands (visual-fill-column-mode)
   :custom
-  (visual-fill-column-width 62)
+  (visual-fill-column-width 72)
   :init
   (add-hook! 'visual-fill-column-mode-hook
     (visual-line-mode +1)

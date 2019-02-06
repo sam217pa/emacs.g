@@ -128,6 +128,11 @@
   (setq dired-omit-files (concat dired-omit-files
                                  "\\|^\\..*$\\|^.DS_Store$\\|^.projectile$\\|^.git$")))
 
+(use-package dired-tar
+  :after dired
+  :bind* (:map dired-mode-map
+          ("T" . dired-tar-dwim)))
+
 (defun sam-dired--uuidgen ()
   (replace-regexp-in-string
    "\n\\'" ""

@@ -4,18 +4,12 @@
 [submodule "ace-window"]
 	path = lib/ace-window
 	url = git@github.com:abo-abo/ace-window.git
-[submodule "all-the-icons"]
-	path = lib/all-the-icons
-	url = git@github.com:domtronn/all-the-icons.el.git
 [submodule "async"]
 	path = lib/async
 	url = git@github.com:jwiegley/emacs-async.git
 [submodule "auctex"]
 	path = lib/auctex
 	url = https://git.savannah.gnu.org/git/auctex.git
-[submodule "auto-async-byte-compile"]
-	path = lib/auto-async-byte-compile
-	url = git@github.com:rubikitch/auto-async-byte-compile.git
 [submodule "auto-compile"]
 	path = lib/auto-compile
 	url = git@github.com:emacscollective/auto-compile.git
@@ -59,9 +53,6 @@
 [submodule "diff-hl"]
 	path = lib/diff-hl
 	url = git@github.com:dgutov/diff-hl.git
-[submodule "doom-modeline"]
-	path = lib/doom-modeline
-	url = git@github.com:seagle0128/doom-modeline.git
 [submodule "eldoc-eval"]
 	path = lib/eldoc-eval
 	url = git@github.com:thierryvolpiatto/eldoc-eval.git
@@ -108,6 +99,9 @@
 [submodule "ggo-mode"]
 	path = lib/ggo-mode
 	url = git@github.com:mkjunker/ggo-mode.git
+[submodule "ggtags"]
+	path = lib/ggtags
+	url = git@github.com:leoliu/ggtags.git
 [submodule "ghub"]
 	path = lib/ghub
 	url = git@github.com:magit/ghub.git
@@ -117,9 +111,6 @@
 [submodule "grab-mac-link"]
 	path = lib/grab-mac-link
 	url = git@github.com:xuchunyang/grab-mac-link.el.git
-[submodule "green-screen-theme"]
-	path = lib/green-screen-theme
-	url = git@github.com:rbanffy/green-screen-emacs.git
 [submodule "helm-bibtex"]
 	path = lib/helm-bibtex
 	url = git@github.com:tmalsburg/helm-bibtex.git
@@ -165,9 +156,6 @@
 [submodule "key-seq"]
 	path = lib/key-seq
 	url = git@github.com:vlevit/key-seq.el.git
-[submodule "keyfreq"]
-	path = lib/keyfreq
-	url = git@github.com:dacap/keyfreq.git
 [submodule "kv"]
 	path = lib/kv
 	url = git@github.com:nicferrier/emacs-kv.git
@@ -242,9 +230,6 @@
 [submodule "packed"]
 	path = lib/packed
 	url = git@github.com:emacscollective/packed.git
-[submodule "parinfer"]
-	path = lib/parinfer
-	url = git@github.com:DogLooksGood/parinfer-mode.git
 [submodule "parsebib"]
 	path = lib/parsebib
 	url = git@github.com:joostkremers/parsebib.git

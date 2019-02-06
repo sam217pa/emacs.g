@@ -1,9 +1,9 @@
-;;; sam.el --- personal package                      -*- lexical-binding: t; -*-
+;;; sam-todo.el --- todo                             -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Samuel Barreto
 
 ;; Author: Samuel Barreto <samuel.barreto8@gmail.com>
-;; Keywords: conv
+;; Keywords: todo
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -24,21 +24,19 @@
 
 ;;; Code:
 
-(defgroup sam nil
-  "Personal function and keybindings"
-  :prefix "sam-"
-  :group 'lisp)
-
-(require 'sam-utils)
-(require 'sam-viridis)
-(require 'sam-helpers)
-(require 'sam-dired)
 (require 'sam-keybindings)
-(require 'sam-todo)
-(require 'sam-org)
-(require 'sam-mail)
-(require 'sam-themes)
-(require 'sam-autoinsert)
+(require 'calendar)
+(require 'todo-mode)
 
-(provide 'sam)
-;;; sam.el ends here
+(sam-set-custom
+  calendar-date-style 'iso)
+
+(sam-defkeys
+  "C-c c" 'calendar
+  "C-c d" 'diary
+  "C-c t" 'todo-show
+  "C-c j" 'todo-jump-to-category
+  "C-c i" 'todo-insert-item)
+
+(provide 'sam-todo)
+;;; sam-todo.el ends here

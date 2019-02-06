@@ -51,14 +51,30 @@ maps key to value for each key-value pair in KV-PAIRS."
   (let ((s (/ (length kv-pairs) 2)))
     `(progn
        (defvar ,var (make-hash-table :size ,s :test 'equal) ,docstring)
-       ,@(mapcar
-          (lambda (pair) `(puthash ,@pair ,var))
-          (sam--group kv-pairs 2)))))
+       (sam-with-args2 pair
+         (puthash (car pair) (cadr pair) ,var)
+         ,@kv-pairs))))
 
 (defun sam-add-to-list (lst &rest args)
   (mapcar
    (lambda (el) (add-to-list lst el))
    args))
+
+(defmacro sam-with-args2 (name body &rest args)
+  (declare (indent defun))
+  `(progn
+     ,@(mapcar
+        (lambda (g)
+          `(cl-symbol-macrolet ((,name ',g))
+             ,body))
+        (sam--group args 2))))
+
+(defmacro sam-set-custom (&rest args)
+  (declare (indent 0))
+  `(progn
+     ,@(mapcar
+        (lambda (pair) `(custom-set-variables '(,@pair)))
+        (sam--group args 2))))
 
 (provide 'sam-utils)
 ;;; sam-utils.el ends here

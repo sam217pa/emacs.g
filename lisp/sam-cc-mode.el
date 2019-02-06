@@ -1,9 +1,9 @@
-;;; sam.el --- personal package                      -*- lexical-binding: t; -*-
+;;; sam-cc-mode.el --- c programming                 -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Samuel Barreto
 
 ;; Author: Samuel Barreto <samuel.barreto8@gmail.com>
-;; Keywords: conv
+;; Keywords: c, prog
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -20,25 +20,17 @@
 
 ;;; Commentary:
 
-;;
+;; This is my customisation for editing c code. Fortunately, emacs is
+;; very well suited to programming C, so I don't have to customise
+;; that much. I just added ggtags, browsing with GNU Globals is very
+;; much to my linking. I would be glad to be able to browse distant
+;; sources, like the libguile.h headers, but I still can't tailor
+;; ggtags to do that. Maybe with another LSP backend, like eglot.
 
 ;;; Code:
 
-(defgroup sam nil
-  "Personal function and keybindings"
-  :prefix "sam-"
-  :group 'lisp)
+(use-package ggtags
+  :hook ((cc-mode . ggtags-mode)))
 
-(require 'sam-utils)
-(require 'sam-viridis)
-(require 'sam-helpers)
-(require 'sam-dired)
-(require 'sam-keybindings)
-(require 'sam-todo)
-(require 'sam-org)
-(require 'sam-mail)
-(require 'sam-themes)
-(require 'sam-autoinsert)
-
-(provide 'sam)
-;;; sam.el ends here
+(provide 'sam-cc-mode)
+;;; sam-cc-mode.el ends here

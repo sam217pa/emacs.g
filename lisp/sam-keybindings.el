@@ -85,6 +85,26 @@ Nicer wrapper."
   "s-C"     'sam-switch-to-compilation
   "C-x n"   'sam-narrow-or-widen-dwim)
 
+(use-package key-chord
+  :commands (key-chord-mode
+             key-chord-define-global)
+  :custom
+  (key-chord-two-key-delay 0.2)
+  :init
+  (key-chord-mode 1)
+  (key-chord-define-global "xq" #'fort))
+
+
+(use-package key-seq
+  :after key-chord
+  :commands (key-seq-define-global
+             key-seq-define)
+  :init
+  (key-seq-define-global "qd" #'bury-buffer)
+  (key-seq-define-global "qb" #'counsel-bookmark)
+  (key-seq-define-global "qf" #'kill-frame)
+  (key-seq-define-global "qw" #'kill-window)
+  (key-seq-define emacs-lisp-mode-map "$u" #'use-package-jump))
 
 (provide 'sam-keybindings)
 ;;; sam-keybindings.el ends here

@@ -257,7 +257,13 @@ When using Homebrew, install it using \"brew install trash\"."
   (setq frame-resize-pixelwise t)
 
   (setq display-buffer-alist
-        `(("\\*Buffer List\\*" display-buffer-in-side-window
+        `(("\\*\\(?:Buffer List\\|Bookmark List\\)\\*"
+           display-buffer-in-side-window
+           (side . top)
+           (slot . -1)
+           (window-height . 10)
+           (preserve-size . (nil . t)) ,sam--parameters)
+          ("\\*Buffer List\\*" display-buffer-in-side-window
            (side . top)
            (slot . -1)
            (window-height . 10)

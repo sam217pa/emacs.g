@@ -1,9 +1,9 @@
-;;; sam.el --- personal package                      -*- lexical-binding: t; -*-
+;;; sam-autoinsert.el --- definitions for auto-insert  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Samuel Barreto
 
 ;; Author: Samuel Barreto <samuel.barreto8@gmail.com>
-;; Keywords: conv
+;; Keywords: autotype, autoinsert
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -24,21 +24,40 @@
 
 ;;; Code:
 
-(defgroup sam nil
-  "Personal function and keybindings"
-  :prefix "sam-"
-  :group 'lisp)
+(require 'autoinsert)
 
-(require 'sam-utils)
-(require 'sam-viridis)
-(require 'sam-helpers)
-(require 'sam-dired)
-(require 'sam-keybindings)
-(require 'sam-todo)
-(require 'sam-org)
-(require 'sam-mail)
-(require 'sam-themes)
-(require 'sam-autoinsert)
+(add-to-list
+ 'auto-insert-alist
+ '(("\\.R\\'" . "R Header")
+   "Short Description: "
+   "### " (file-name-nondirectory (buffer-file-name)) " --- " str
 
-(provide 'sam)
-;;; sam.el ends here
+   "
+
+## Copyright (C) " (format-time-string "%Y") "  " user-full-name
+   "
+
+##  Author: " user-full-name
+   "
+## License: GPL3+ (see <https://www.gnu.org/licenses/gpl-3.0.txt>)"
+   "
+
+## * Commentary
+
+#'
+#'
+
+## * Code
+
+## ** Libraries
+
+
+
+## " (file-name-nondirectory (buffer-file-name)) " ends here."))
+
+(auto-insert-mode 1)
+
+
+
+(provide 'sam-autoinsert)
+;;; sam-autoinsert.el ends here

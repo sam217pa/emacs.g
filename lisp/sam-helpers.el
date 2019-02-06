@@ -20,7 +20,8 @@
 
 ;;; Commentary:
 
-;;
+;; References:
+;; - ;lab:iw9zie :: https://github.com/Fuco1/.emacs.d/blob/af82072196564fa57726bdbabf97f1d35c43b7f7/site-lisp/redef.el#L20-L94
 
 ;;; Code:
 
@@ -477,6 +478,7 @@ frame."
         (t (open-line 1))))
 
 (sam-defaliases
+  'sam-bsnp #'buffer-substring-no-properties
   'change-log-add-entry #'add-change-log-entry
   'change-log-add-entry-other-window #'add-change-log-entry-other-window)
 
@@ -498,9 +500,70 @@ frame."
     (sam-defill-paragraph)
     (forward-paragraph)))
 
-;; https://github.com/Fuco1/.emacs.d/blob/af82072196564fa57726bdbabf97f1d35c43b7f7/site-lisp/redef.el#L20-L94
-(defun sam-lisp-indent-function (indent-point state)
-  "This function is the normal value of the variable `lisp-indent-function'.
+(defmacro sam-string-trim-nl (string)
+  "Remove newline at end of STRING."
+  (declare (debug t) (indent 1))
+  `(let* ((str ,string) (len (length str)))
+     (cond
+      ((and (> len 0) (eql (aref str (- len 1)) ?\n))
+       (substring str 0 (- len 1)))
+      (t str))))
+
+(defmacro sam-shell-command-to-string (cmd &optional newline)
+  (if newline
+      `(shell-command-to-string ,cmd)
+    `(shell-command-to-string
+      (format "printf %%s \"$(%s)\" " ,cmd))))
+
+(defvar sam-hash-length 6
+  "Prefered value for generating hash.")
+
+(defvar sam-hash-char "@lab"
+  "Prefered string hash labels.")
+
+(defvar sam-hash-ref-label "@ref"
+  "Prefered string hash references.")
+
+(defun sam--hash-concat (ref &rest args)
+  "Concatenate `comment-start' to `sam-hash-char' and ARGS."
+  (let ((gref (pcase ref
+                (':ref sam-hash-ref-label)
+                (':lab sam-hash-char)
+                (_ (error "unrecognized kwd")))))
+    (apply #'concat `(,gref "{" ,@args "}"))))
+
+(defun sam-hash-gen ()
+  "Generate a random string of length `sam-hash-length' if LEN is not specified."
+  (interactive)
+  (let ((h (sam-shell-command-to-string
+            (format "pwgen %i 1" sam-hash-length))))
+    (downcase (sam--hash-concat :lab h))))
+
+(defun sam--hash-list ()
+  "Search all occurences of hashes in current file."
+  (let ((p (point))
+        hs)
+    (goto-char 0)
+    (while (re-search-forward (format "%s\{" sam-hash-char) nil t)
+      (setq hs (cons (sam-bsnp (point) (+ (point) sam-hash-length)) hs)))
+    (goto-char p)
+    (nreverse hs)))
+
+(defun sam-ref-hash (hash)
+  "Insert HASH into current buffer by searching for all hashes
+into buffer using `sam--hash-list'."
+  (interactive
+   (list (sam--hash-list)))
+  (insert
+   (sam--hash-concat :ref (completing-read "Choose ref: " hash))))
+
+;; silence byte-compiler
+(defvar calculate-lisp-indent-last-sexp)
+
+;; see ;ref:iw9zie
+(eval-after-load "lisp-mode"
+  '(defun sam-lisp-indent-function (indent-point state)
+     "This function is the normal value of the variable `lisp-indent-function'.
 The function `calculate-lisp-indent' calls this to determine
 if the arguments of a Lisp function call should be indented specially.
 
@@ -526,54 +589,54 @@ it specifies how to indent.  The property value can be:
 
 This function returns either the indentation to use, or nil if the
 Lisp function does not specify a special indentation."
-  (let ((normal-indent (current-column))
-        (orig-point (point)))
-    (goto-char (1+ (elt state 1)))
-    (parse-partial-sexp (point) calculate-lisp-indent-last-sexp 0 t)
-    (cond
-     ;; car of form doesn't seem to be a symbol, or is a keyword
-     ((and (elt state 2)
-           (or (not (looking-at "\\sw\\|\\s_"))
-               (looking-at ":")))
-      (if (not (> (save-excursion (forward-line 1) (point))
-                  calculate-lisp-indent-last-sexp))
-          (progn (goto-char calculate-lisp-indent-last-sexp)
-                 (beginning-of-line)
-                 (parse-partial-sexp (point)
-                                     calculate-lisp-indent-last-sexp 0 t)))
-      ;; Indent under the list or under the first sexp on the same
-      ;; line as calculate-lisp-indent-last-sexp.  Note that first
-      ;; thing on that line has to be complete sexp since we are
-      ;; inside the innermost containing sexp.
-      (backward-prefix-chars)
-      (current-column))
-     ((and (save-excursion
-             (goto-char indent-point)
-             (skip-syntax-forward " ")
-             (not (looking-at ":")))
-           (save-excursion
-             (goto-char orig-point)
-             (looking-at ":")))
-      (save-excursion
-        (goto-char (+ 2 (elt state 1)))
-        (current-column)))
-     (t
-      (let ((function (buffer-substring (point)
-                                        (progn (forward-sexp 1) (point))))
-            method)
-        (setq method (or (function-get (intern-soft function)
-                                       'lisp-indent-function)
-                         (get (intern-soft function) 'lisp-indent-hook)))
-        (cond ((or (eq method 'defun)
-                   (and (null method)
-                        (> (length function) 3)
-                        (string-match "\\`def" function)))
-               (lisp-indent-defform state indent-point))
-              ((integerp method)
-               (lisp-indent-specform method state
-                                     indent-point normal-indent))
-              (method
-               (funcall method indent-point state))))))))
+     (let ((normal-indent (current-column))
+           (orig-point (point)))
+       (goto-char (1+ (elt state 1)))
+       (parse-partial-sexp (point) calculate-lisp-indent-last-sexp 0 t)
+       (cond
+        ;; car of form doesn't seem to be a symbol, or is a keyword
+        ((and (elt state 2)
+              (or (not (looking-at "\\sw\\|\\s_"))
+                  (looking-at ":")))
+         (if (not (> (save-excursion (forward-line 1) (point))
+                     calculate-lisp-indent-last-sexp))
+             (progn (goto-char calculate-lisp-indent-last-sexp)
+                    (beginning-of-line)
+                    (parse-partial-sexp (point)
+                                        calculate-lisp-indent-last-sexp 0 t)))
+         ;; Indent under the list or under the first sexp on the same
+         ;; line as calculate-lisp-indent-last-sexp.  Note that first
+         ;; thing on that line has to be complete sexp since we are
+         ;; inside the innermost containing sexp.
+         (backward-prefix-chars)
+         (current-column))
+        ((and (save-excursion
+                (goto-char indent-point)
+                (skip-syntax-forward " ")
+                (not (looking-at ":")))
+              (save-excursion
+                (goto-char orig-point)
+                (looking-at ":")))
+         (save-excursion
+           (goto-char (+ 2 (elt state 1)))
+           (current-column)))
+        (t
+         (let ((function (buffer-substring (point)
+                                           (progn (forward-sexp 1) (point))))
+               method)
+           (setq method (or (function-get (intern-soft function)
+                                          'lisp-indent-function)
+                            (get (intern-soft function) 'lisp-indent-hook)))
+           (cond ((or (eq method 'defun)
+                      (and (null method)
+                           (> (length function) 3)
+                           (string-match "\\`def" function)))
+                  (lisp-indent-defform state indent-point))
+                 ((integerp method)
+                  (lisp-indent-specform method state
+                                        indent-point normal-indent))
+                 (method
+                  (funcall method indent-point state)))))))))
 
 (provide 'sam-helpers)
 ;;; sam-helpers.el ends here

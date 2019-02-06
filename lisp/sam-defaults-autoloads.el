@@ -215,7 +215,7 @@ Switch to the current compilation buffer
 
 \(fn)" t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-helpers" '(#("sam-" 0 4 (fontified t face font-lock-function-name-face)) #("hour-minute-timestamp" 0 21 (face font-lock-function-name-face fontified nil)) #("modi/multi-pop-to-mark" 0 22 (face font-lock-function-name-face fontified nil)) #("append-to-list!" 0 15 (face font-lock-function-name-face fontified nil)) #("iso-timestamp" 0 13 (face font-lock-function-name-face fontified nil)) #("propertize-prompt" 0 17 (face font-lock-function-name-face fontified nil)))))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-helpers" '(#("sam-" 0 4 (fontified t face font-lock-function-name-face)) #("hour-minute-timestamp" 0 21 (face font-lock-function-name-face fontified t)) #("modi/multi-pop-to-mark" 0 22 (face font-lock-function-name-face fontified t)) #("append-to-list!" 0 15 (face font-lock-function-name-face fontified t)) #("iso-timestamp" 0 13 (face font-lock-function-name-face fontified t)) #("propertize-prompt" 0 17 (face font-lock-function-name-face fontified t)))))
 
 ;;;***
 
@@ -255,7 +255,7 @@ Nicer wrapper.
 
 \(fn COLORS)" t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-viridis" '(#("sam-viridis--" 0 4 (fontified t face font-lock-function-name-face) 4 13 (fontified t face font-lock-function-name-face)))))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-viridis" '(#("sam-viridis--" 0 13 (fontified t face font-lock-function-name-face)))))
 
 ;;;***
 
