@@ -1,9 +1,9 @@
-;;; sam.el --- personal package                      -*- lexical-binding: t; -*-
+;;; sam-text.el --- text deriving editing            -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Samuel Barreto
 
 ;; Author: Samuel Barreto <samuel.barreto8@gmail.com>
-;; Keywords: conv
+;; Keywords: text
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -20,28 +20,17 @@
 
 ;;; Commentary:
 
-;;
+;; Code for editing text related stuff, like markdown.
 
 ;;; Code:
 
-(defgroup sam nil
-  "Personal function and keybindings"
-  :prefix "sam-"
-  :group 'lisp)
 
-(require 'sam-utils)
-(require 'sam-compile)
-(require 'sam-viridis)
-(require 'sam-helpers)
-(require 'sam-dired)
-(require 'sam-keybindings)
-(require 'sam-todo)
-(require 'sam-org)
-(require 'sam-mail)
-(require 'sam-themes)
-(require 'sam-text)
-(require 'sam-autoinsert)
-(require 'sam-kill)
+(use-package markdown-mode
+  :mode ("\\.md\\'" . markdown-mode)
+  :hook ((markdown-mode . outline-minor-mode)
+         (markdown-mode . abbrev-mode)
+         (markdown-mode . shelter-mode)))
 
-(provide 'sam)
-;;; sam.el ends here
+
+(provide 'sam-text)
+;;; sam-text.el ends here

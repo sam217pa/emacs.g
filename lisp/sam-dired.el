@@ -109,6 +109,7 @@
    ("8"   . dired-mkdir-date)
    ("9"   . dired-mkdir-date-rstyle)
    ("O"   . sam-open-in-external-app)
+   ("K"   . sam-dired-rm)
    ("C-'" . shell)
    ("q"   . (lambda () (interactive) (quit-window 4)))))
 
@@ -163,6 +164,13 @@ that describes it."
   (interactive)
   (sam-dired-with-marked-files f
     (set-file-modes f (string-to-number "0444" 8))))
+
+(defun sam-dired-rm ()
+  "Remove marked files using rm."
+  (interactive)
+  (progn
+    (dired-do-shell-command "rm -f * &" nil (dired-get-marked-files))
+    (dired-do-redisplay)))
 
 (provide 'sam-dired)
 ;;; sam-dired.el ends here

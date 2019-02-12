@@ -26,8 +26,12 @@
 
 (require 'autoinsert)
 
-(add-to-list
- 'auto-insert-alist
+(defmacro sam-autoinsert (&rest args)
+  "Add ARGS to `auto-insert-alist'"
+  `(progn ,@(mapcar (lambda (arg) `(add-to-list 'auto-insert-alist ,arg)) args)))
+
+;; insert header for R script.
+(sam-autoinsert
  '(("\\.R\\'" . "R Header")
    "Short Description: "
    "### " (file-name-nondirectory (buffer-file-name)) " --- " str
@@ -37,9 +41,10 @@
 ## Copyright (C) " (format-time-string "%Y") "  " user-full-name
    "
 
-##  Author: " user-full-name
+## Author:  " user-full-name
    "
-## License: GPL3+ (see <https://www.gnu.org/licenses/gpl-3.0.txt>)"
+## License: GPL3+ (see <https://www.gnu.org/licenses/gpl-3.0.txt>)
+## Time-stamp: <>"
    "
 
 ## * Commentary
@@ -54,6 +59,13 @@
 
 
 ## " (file-name-nondirectory (buffer-file-name)) " ends here."))
+
+;; insert header for org mode todos.
+(sam-autoinsert
+ '(("TODO\\'" . "TODO Header") ""
+   "# -*- mode: org -*-
+# Time-stamp: <>
+"))
 
 (auto-insert-mode 1)
 

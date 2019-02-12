@@ -225,7 +225,7 @@ When using Homebrew, install it using \"brew install trash\"."
 
   (when window-system
     ;; increase space between lines
-    (setq-default line-spacing 1)
+    (setq-default line-spacing 4)
 
     ;; change default font for current frame
     (add-to-list 'default-frame-alist `(font . ,sam-font))
@@ -290,7 +290,7 @@ When using Homebrew, install it using \"brew install trash\"."
            (slot . -1)
            (preserve-size . (t . nil))
            ,sam--parameters)
-          ("\\*\\(?:shell\\)\\*" display-buffer-in-side-window
+          ("\\*\\(?:shell\\|Async Shell Command\\)\\*" display-buffer-in-side-window
            (side . top)
            (slot . 1)
            (preserve-size . (nil . t))
@@ -329,6 +329,8 @@ When using Homebrew, install it using \"brew install trash\"."
   (sam--defaults!)
   (sam--keyboard!)
   (sam--darwin-defaults!))
+
+(add-hook 'before-save-hook #'time-stamp)
 
 (provide 'sam-defaults)
 

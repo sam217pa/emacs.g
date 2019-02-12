@@ -26,6 +26,14 @@ unpack it.  The file's name must end in \".tar\", \".tar.gz\", or
 
 ;;;***
 
+;;;### (autoloads nil "sam-autoinsert" "sam-autoinsert.el" (0 0 0
+;;;;;;  0))
+;;; Generated autoloads from sam-autoinsert.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-autoinsert" '(#("sam-autoinsert" 0 14 (face font-lock-function-name-face fontified t)))))
+
+;;;***
+
 ;;;### (autoloads nil "sam-defaults" "sam-defaults.el" (0 0 0 0))
 ;;; Generated autoloads from sam-defaults.el
 
@@ -56,7 +64,7 @@ that describes it.
 
 \(fn &optional ARG)" t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-dired" '(#("sam-dired-" 0 10 (face font-lock-function-name-face fontified nil)))))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-dired" '(#("sam-dired-" 0 10 (fontified nil face font-lock-function-name-face)))))
 
 ;;;***
 
@@ -230,6 +238,13 @@ Nicer wrapper.
 \(fn &rest ARGS)" nil t)
 
 (function-put 'sam-defkeys 'lisp-indent-function '0)
+
+;;;***
+
+;;;### (autoloads nil "sam-kill" "sam-kill.el" (0 0 0 0))
+;;; Generated autoloads from sam-kill.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-kill" '(#("kill-" 0 5 (fontified t face font-lock-function-name-face)))))
 
 ;;;***
 

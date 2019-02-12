@@ -702,65 +702,6 @@ abort completely with `C-g'."
   (magit-todos-mode))
 
 
-(use-package make-mode
-  :functions (sam-makefile-info
-              sam-makefile-document)
-  :commands (makefile-bsdmake-mode
-             makefile-gmake-mode
-             makefile-pickup-targets)
-  :init
-  (add-hook! 'makefile-bsdmake-mode-hook
-    (makefile-gmake-mode))
-  :config
-
-  (defun sam-makefile--search-vars (buf)
-    (with-current-buffer buf
-      (let ((vars '()))
-        (mapc
-         (lambda (s)
-           (save-excursion
-             (goto-char 0)
-             (while (search-forward s nil t)
-               (setq vars
-                     (append vars
-                             `(,(buffer-substring-no-properties (point-at-bol)
-                                                                (- (point) 4))))))))
-         '(" := " " ?= "))
-        vars)))
-
-
-  (defun sam-makefile-info ()
-    (interactive)
-    (when (eq major-mode 'makefile-gmake-mode)
-      (let ((vars (sam-makefile--search-vars (current-buffer))))
-        (insert ".PHONY: info\ninfo:")
-        (cl-loop for var in vars do
-                 (insert (format "\n\t@echo %s: $(%s)" var var)))
-        (insert "\n"))))
-
-  (defun sam-makefile-document ()
-    (interactive)
-    (require 'make-mode)
-    (progn
-      (makefile-pickup-targets)
-      (let*
-          ((targets makefile-target-table)
-           (excluded-targets '(".PHONY" ".PRECIOUS"))
-           (targets
-            (seq-filter
-             (lambda (x) (not (or (cl-member (car x) excluded-targets :test 'string-equal)
-                             (string-match "%" (car x)))))
-             targets)))
-        (insert "\n.PHONY: help\nhelp:\n")
-        (seq-map
-         (lambda (x) (insert (format "\t$(info make %s -- )\n" (car x))))
-         targets)))))
-
-(use-package markdown-mode
-  :mode ("\\.md\\'" . markdown-mode)
-  :hook (markdown-mode . outline-minor-mode))
-
-
 (use-package minions
   :hook (after-init . minions-mode))
 
