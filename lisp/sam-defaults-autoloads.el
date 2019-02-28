@@ -34,6 +34,14 @@ unpack it.  The file's name must end in \".tar\", \".tar.gz\", or
 
 ;;;***
 
+;;;### (autoloads nil "sam-completion" "sam-completion.el" (0 0 0
+;;;;;;  0))
+;;; Generated autoloads from sam-completion.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-completion" '(#("sam-load-theme" 0 1 (face font-lock-function-name-face fontified t) 1 14 (fontified t face font-lock-function-name-face)) #("slt" 0 1 (face font-lock-function-name-face fontified t) 1 3 (face font-lock-function-name-face fontified t)))))
+
+;;;***
+
 ;;;### (autoloads nil "sam-defaults" "sam-defaults.el" (0 0 0 0))
 ;;; Generated autoloads from sam-defaults.el
 
@@ -51,7 +59,7 @@ Add a lamdba containing BODY to hook HOOK.
 
 \(fn)" t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-defaults" '(#("system-move-file-to-trash" 0 1 (fontified t face font-lock-function-name-face) 1 25 (fontified t face font-lock-function-name-face)) #("sam-" 0 1 (fontified t face font-lock-function-name-face) 1 4 (face font-lock-function-name-face fontified t)))))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-defaults" '(#("system-move-file-to-trash" 0 1 (fontified t face font-lock-function-name-face) 1 25 (fontified nil face font-lock-function-name-face)) #("sam-" 0 1 (fontified t face font-lock-function-name-face) 1 4 (face font-lock-function-name-face fontified t)) #("advice" 0 6 (fontified t face font-lock-function-name-face)))))
 
 ;;;***
 
@@ -64,7 +72,7 @@ that describes it.
 
 \(fn &optional ARG)" t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-dired" '(#("sam-dired-" 0 10 (fontified nil face font-lock-function-name-face)))))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-dired" '(#("sam-dired-" 0 10 (face font-lock-function-name-face fontified nil)))))
 
 ;;;***
 
@@ -80,7 +88,7 @@ Adjust the frame transparence.
 - Reset with 0.
 - Escape with C-g.
 
-\(fn X)" t nil)
+\(fn)" t nil)
 
 (autoload 'sam-kill-word-at-point "sam-helpers" "\
 
@@ -154,8 +162,7 @@ Duplicate the line containing point.
 \(fn)" t nil)
 
 (autoload 'sam-maximize-window "sam-helpers" "\
-Maximize frame on first use, toggle frame fullscreen on second
-consecutive use.
+Maximize frame and window.
 
 \(fn)" t nil)
 
@@ -223,7 +230,7 @@ Switch to the current compilation buffer
 
 \(fn)" t nil)
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-helpers" '(#("sam-" 0 4 (fontified t face font-lock-function-name-face)) #("hour-minute-timestamp" 0 21 (face font-lock-function-name-face fontified t)) #("modi/multi-pop-to-mark" 0 22 (face font-lock-function-name-face fontified t)) #("append-to-list!" 0 15 (face font-lock-function-name-face fontified t)) #("iso-timestamp" 0 13 (face font-lock-function-name-face fontified t)) #("propertize-prompt" 0 17 (face font-lock-function-name-face fontified t)))))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-helpers" '(#("sam-" 0 4 (fontified nil face font-lock-variable-name-face)) #("hour-minute-timestamp" 0 21 (face font-lock-function-name-face fontified nil)) #("modi/multi-pop-to-mark" 0 22 (face font-lock-function-name-face fontified nil)) #("append-to-list!" 0 15 (face font-lock-function-name-face fontified nil)) #("iso-timestamp" 0 13 (face font-lock-function-name-face fontified nil)))))
 
 ;;;***
 
@@ -244,21 +251,28 @@ Nicer wrapper.
 ;;;### (autoloads nil "sam-kill" "sam-kill.el" (0 0 0 0))
 ;;; Generated autoloads from sam-kill.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-kill" '(#("kill-" 0 5 (fontified t face font-lock-function-name-face)))))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-kill" '(#("kill-" 0 5 (face font-lock-function-name-face fontified t)))))
 
 ;;;***
 
 ;;;### (autoloads nil "sam-themes" "sam-themes.el" (0 0 0 0))
 ;;; Generated autoloads from sam-themes.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-themes" '(#("sam-use-theme" 0 13 (fontified t face font-lock-function-name-face)))))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-themes" '(#("sam-use-theme" 0 13 (fontified nil face font-lock-function-name-face)))))
+
+;;;***
+
+;;;### (autoloads nil "sam-todo" "sam-todo.el" (0 0 0 0))
+;;; Generated autoloads from sam-todo.el
+
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-todo" '(#("sam-todo" 0 8 (fontified t face font-lock-function-name-face)))))
 
 ;;;***
 
 ;;;### (autoloads nil "sam-utils" "sam-utils.el" (0 0 0 0))
 ;;; Generated autoloads from sam-utils.el
 
-(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-utils" '(#("sam-" 0 4 (fontified t face font-lock-function-name-face)))))
+(if (fboundp 'register-definition-prefixes) (register-definition-prefixes "sam-utils" '(#("sam-" 0 4 (face font-lock-function-name-face fontified t)))))
 
 ;;;***
 

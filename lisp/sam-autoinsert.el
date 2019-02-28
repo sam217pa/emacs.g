@@ -26,9 +26,11 @@
 
 (require 'autoinsert)
 
-(defmacro sam-autoinsert (&rest args)
+(defun sam-autoinsert (&rest args)
+  (declare (indent 0))
   "Add ARGS to `auto-insert-alist'"
-  `(progn ,@(mapcar (lambda (arg) `(add-to-list 'auto-insert-alist ,arg)) args)))
+  (mapcar (lambda (it) (add-to-list 'auto-insert-alist it))
+          args))
 
 ;; insert header for R script.
 (sam-autoinsert
@@ -58,18 +60,17 @@
 
 
 
-## " (file-name-nondirectory (buffer-file-name)) " ends here."))
+## * " (file-name-nondirectory (buffer-file-name)) " ends here.")
 
-;; insert header for org mode todos.
-(sam-autoinsert
+ ;; insert header for org mode todos.
  '(("TODO\\'" . "TODO Header") ""
    "# -*- mode: org -*-
 # Time-stamp: <>
-"))
+"
+   )) ; sam-autoinsert
 
+;; enable auto-insert mode
 (auto-insert-mode 1)
-
-
 
 (provide 'sam-autoinsert)
 ;;; sam-autoinsert.el ends here

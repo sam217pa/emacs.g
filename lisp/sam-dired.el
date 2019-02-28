@@ -24,9 +24,11 @@
 
 ;;; Code:
 
+(require 'sam-utils)
+
 (use-package dired
   :bind* (("C-x d" . dired-other-window)
-          ("C-x C-d" . dired-side))
+          ("C-x C-'" . dired-side))
   :defines (ls-lisp-use-insert-directory-program)
   :commands (dired
              dired-view-other-window
@@ -48,11 +50,13 @@
     (interactive)
     (let ((buffer (dired-noselect default-directory)))
       (with-current-buffer buffer (dired-hide-details-mode t))
-      (display-buffer-in-side-window
+      (sam-side-buffer
        buffer  `((side          . left)
-                 (slot          . 0)
+                 (slot          . 4)
                  (window-width  . 20)
                  (preserve-size . (t . nil)) ,sam--parameters))))
+
+
 
   (let ((gls "/usr/local/bin/gls"))
     (if (file-exists-p gls)
@@ -98,6 +102,7 @@
 
   (bind-keys
    :map dired-mode-map
+   ("ù"   . dired-up-directory)
    ("SPC" . dired-view-other-window)
    ("C-+" . dired-mktemp)
    ("H"   . dired-omit-mode)
@@ -115,7 +120,7 @@
 
 (use-package dired-x
   :after dired
-  :bind* (("C-x C-'" . dired-jump))
+  :bind* (("C-x C-d" . dired-jump))
   :commands (dired-omit-mode)
   :init
   (add-hook! 'dired-load-hook
@@ -169,8 +174,10 @@ that describes it."
   "Remove marked files using rm."
   (interactive)
   (progn
-    (dired-do-shell-command "rm -f * &" nil (dired-get-marked-files))
-    (dired-do-redisplay)))
+    (when (y-or-n-p "Remove? ")
+      (dired-do-shell-command
+       "rm -f * &" nil (dired-get-marked-files))
+      (dired-do-redisplay))))
 
 (provide 'sam-dired)
 ;;; sam-dired.el ends here

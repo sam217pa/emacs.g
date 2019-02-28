@@ -100,7 +100,7 @@ Add a lamdba containing BODY to hook HOOK."
   ;; idem
   (setq mac-pass-control-to-system nil)
   (setq-default locate-command "mdfind")
-  (setq-default cursor-type 'bar)
+  (setq-default cursor-type 'box)
 
   (setq delete-by-moving-to-trash t))
 
@@ -225,7 +225,7 @@ When using Homebrew, install it using \"brew install trash\"."
 
   (when window-system
     ;; increase space between lines
-    (setq-default line-spacing 4)
+    (setq-default line-spacing 0)
 
     ;; change default font for current frame
     (add-to-list 'default-frame-alist `(font . ,sam-font))
@@ -257,11 +257,11 @@ When using Homebrew, install it using \"brew install trash\"."
   (setq frame-resize-pixelwise t)
 
   (setq display-buffer-alist
-        `(("\\*\\(?:Buffer List\\|Bookmark List\\)\\*"
+        `(("\\*\\(?:Buffer List\\|Bookmark List\\|Bookmark Annotation\\)\\*"
            display-buffer-in-side-window
            (side . top)
            (slot . -1)
-           (window-height . 10)
+           (window-height . fit-window-to-buffer)
            (preserve-size . (nil . t)) ,sam--parameters)
           ("\\*Buffer List\\*" display-buffer-in-side-window
            (side . top)
@@ -283,7 +283,7 @@ When using Homebrew, install it using \"brew install trash\"."
            (slot . 2)
            (window-width . fit-window-to-buffer)
            (preserve-size . (t . nil)) ,sam--parameters)
-          ("\\*\\(?:help\\|grep\\|Completions\\)\\*"
+          ("\\*\\(?:help\\|grep\\|Completions\\|undo-tree\\)\\*"
            display-buffer-in-side-window
            (side . left)
            (window-width . fit-window-to-buffer)
@@ -331,6 +331,37 @@ When using Homebrew, install it using \"brew install trash\"."
   (sam--darwin-defaults!))
 
 (add-hook 'before-save-hook #'time-stamp)
+
+(defmacro advices-add (symbol &rest args)
+  "Batch advice SYMBOL with ARGS."
+  (declare (indent 1))
+  `(progn
+     ,@(mapcar
+        (lambda (arg) `(advice-add ,symbol ,@arg))
+        args)))
+
+(defun advice-backward-word (&rest funs)
+  "Advice FUNS with `backward-word'."
+  (cl-loop
+   for fun in funs
+   do (advices-add fun
+        (:before #'sam--bwd-advice)
+        (:after  #'sam--fwd-advice))))
+
+(defun sam--bwd-advice (&optional arg)
+  (cond
+   ((looking-at "[[:blank:]]")
+    (backward-word arg))))
+
+(defun sam--fwd-advice (&optional arg)
+  (forward-char))
+
+(advice-backward-word #'capitalize-word #'upcase-word #'downcase-word)
+
+(add-hook 'text-mode-hook #'electric-quote-local-mode)
+
+(add-to-list 'load-path "~/dotfile/emacs/private/cf/")
+(add-to-list 'load-path "~/dotfile/emacs/private/eaf/")
 
 (provide 'sam-defaults)
 

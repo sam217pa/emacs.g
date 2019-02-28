@@ -20,7 +20,7 @@
 
 ;;; Commentary:
 
-;;
+;; TODO: [2019-02-14 09:57] doesn't work for now.
 
 ;;; Code:
 
@@ -33,21 +33,34 @@
 
 (define-key kill-keymap (kbd "q") #'kill-this-buffer)
 
+(defcustom kill-buffers
+  '("\\*\\(?:\\|Async Shell Command\\|Compile-Log\\)\\*"
+    "\\*Pp Macroexpand Output\\*")
+  "List of regexp that should enable the `kill-minor-mode'."
+  :type 'list
+  :group 'kill)
+
 (define-minor-mode kill-minor-mode
   "A simple minor mode that kills the current buffer."
   :keymap kill-keymap)
 
-(defmacro kill-enable-for-buffers (&rest args)
+(defun kill-enable-for-buffers (&rest args)
   "Enable `kill-minor-mode' for all buffers that match a regexp in ARGS.
 
-ARGS are added to `auto-mode-alist'."
+ARGS are added to `kill-buffers'."
   (declare (indent 0))
-  `(progn
-     ,@(mapcar (lambda (re) `(add-to-list 'auto-mode-alist '(,re . kill-minor-mode)))
-               args)))
+  (setq kill-buffers (nconc args kill-buffers)))
 
-(kill-enable-for-buffers
-  "\\*\\(?:\\|Async Shell Command\\|Compile-Log\\)\\*")
+(defun kill--buffer-p (bufname)
+  (cl-find-if
+   (lambda (x) (string-match x bufname))
+   kill-buffers))
+
+(defun kill--toggle ()
+  (when (kill--buffer-p (buffer-name))
+    (kill-minor-mode 1)))
+
+(advice-add #'set-auto-mode :after #'kill--toggle)
 
 (provide 'sam-kill)
 ;;; sam-kill.el ends here

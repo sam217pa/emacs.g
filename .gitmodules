@@ -34,9 +34,6 @@
 [submodule "commenter"]
 	path = lib/commenter
 	url = git@github.com:yuutayamada/commenter.git
-[submodule "counsel-projectile"]
-	path = lib/counsel-projectile
-	url = git@github.com:ericdanan/counsel-projectile.git
 [submodule "ctable"]
 	path = lib/ctable
 	url = git@github.com:kiwanami/emacs-ctable.git
@@ -90,9 +87,6 @@
 [submodule "fennel-mode"]
 	path = lib/fennel-mode
 	url = git@gitlab.com:technomancy/fennel-mode.git
-[submodule "flx"]
-	path = lib/flx
-	url = git@github.com:lewang/flx.git
 [submodule "geiser"]
 	path = lib/geiser
 	url = git@gitlab.com:jaor/geiser.git
@@ -203,9 +197,6 @@
 [submodule "navi-mode"]
 	path = lib/navi-mode
 	url = git@github.com:alphapapa/navi.git
-[submodule "nim-mode"]
-	path = lib/nim-mode
-	url = git@github.com:nim-lang/nim-mode.git
 [submodule "no-littering"]
 	path = lib/no-littering
 	url = git@github.com:emacscollective/no-littering.git
@@ -233,18 +224,12 @@
 [submodule "parsebib"]
 	path = lib/parsebib
 	url = git@github.com:joostkremers/parsebib.git
-[submodule "pathify"]
-	path = lib/pathify
-	url = git@github.com:alezost/pathify.el.git
 [submodule "pcre2el"]
 	path = lib/pcre2el
 	url = git@github.com:joddie/pcre2el.git
 [submodule "poporg"]
 	path = lib/poporg
 	url = git@github.com:QBobWatson/poporg.git
-[submodule "projectile"]
-	path = lib/projectile
-	url = git@github.com:bbatsov/projectile.git
 [submodule "rainbow-delimiters"]
 	path = lib/rainbow-delimiters
 	url = git@github.com:Fanael/rainbow-delimiters.git
@@ -275,9 +260,6 @@
 [submodule "spotlight"]
 	path = lib/spotlight
 	url = git@github.com:benmaughan/spotlight.el.git
-[submodule "string-edit"]
-	path = lib/string-edit
-	url = git@github.com:magnars/string-edit.el.git
 [submodule "undo-tree"]
 	path = lib/undo-tree
 	url = git@github.com:emacsorphanage/undo-tree.git

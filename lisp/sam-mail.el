@@ -100,9 +100,5 @@
 (use-package smtpmail
   :after mu4e)
 
-(use-package mwim
-  :bind* (("C-a" . mwim-beginning)
-          ("C-e" . mwim-end)))
-
 (provide 'sam-mail)
 ;;; sam-mail.el ends here

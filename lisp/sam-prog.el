@@ -1,11 +1,9 @@
-;;; sam.el --- personal package                      -*- lexical-binding: t; -*-
+;;; sam-prog.el --- programmation                    -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Samuel Barreto
-;; Time-stamp: <2019-02-18 14:03:00 samuelbarreto>
 
-;; Version: 0.1
 ;; Author: Samuel Barreto <samuel.barreto8@gmail.com>
-;; Keywords: conv
+;; Keywords: prog, abbrev
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -26,31 +24,9 @@
 
 ;;; Code:
 
-(defgroup sam nil
-  "Personal function and keybindings"
-  :prefix "sam-"
-  :group 'lisp)
+(use-package mwim
+  :bind* (("C-a" . mwim-beginning)
+          ("C-e" . mwim-end)))
 
-(require 'sam-autoinsert)
-(require 'sam-cc-mode)
-(require 'sam-compile)
-(require 'sam-completion)
-(require 'sam-defaults)
-(require 'sam-dired)
-(require 'sam-ess)
-(require 'sam-helpers)
-(require 'sam-keybindings)
-(require 'sam-kill)
-(require 'sam-latex)
-(require 'sam-mail)
-(require 'sam-news)
-(require 'sam-org)
-(require 'sam-prog)
-(require 'sam-text)
-(require 'sam-themes)
-(require 'sam-todo)
-(require 'sam-utils)
-(require 'sam-viridis)
-
-(provide 'sam)
-;;; sam.el ends here
+(provide 'sam-prog)
+;;; sam-prog.el ends here

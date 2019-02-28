@@ -28,6 +28,7 @@
 
 (require 'bind-key)
 (require 'sam-utils)
+(require 'shelter)
 
 ;;;###autoload
 (defmacro sam-defkeys (&rest args)
@@ -79,6 +80,7 @@ Nicer wrapper."
   "s-j"     'sam-join-to-next-line
   "s-n"     'sam-narrow-or-widen-dwim
   "s-o"     'sam-open-in-external-app
+  "s-f"     'project-find-file
   "s-q"     'sam-unfill-paragraph
   "s-w"     'sam-main-window
   "ð"       'sam-kill-word-at-point
@@ -100,11 +102,53 @@ Nicer wrapper."
   :commands (key-seq-define-global
              key-seq-define)
   :init
+  (key-seq-define-global "QD" #'kill-this-buffer)
   (key-seq-define-global "qd" #'bury-buffer)
   (key-seq-define-global "qb" #'counsel-bookmark)
   (key-seq-define-global "qf" #'kill-frame)
   (key-seq-define-global "qw" #'kill-window)
   (key-seq-define emacs-lisp-mode-map "$u" #'use-package-jump))
+
+(use-package which-key
+  :defer 2
+  :diminish which-key-mode
+  :commands (which-key-mode
+             which-key-setup-side-window-right-bottom
+             which-key-add-key-based-replacements)
+  :custom
+  ;; simple then alphabetic order.
+  (which-key-sort-order 'which-key-key-order)
+  (which-key-popup-type 'side-window)
+  (which-key-side-window-max-height 0.3)
+  (which-key-side-window-max-width 0.5)
+  (which-key-idle-delay 0.3)
+  (which-key-min-display-lines 7)
+  :config
+  (which-key-mode)
+  (which-key-setup-side-window-right-bottom)
+  ;; key description for C-x
+  (which-key-add-key-based-replacements
+    "C-x RET" "coding system -input"
+    "C-x 4"   "Other Window"
+    "C-x 5"   "Frame"
+    "C-x 6"   "2C"
+    "C-x @"   "event"
+    "C-x 8"   "special char"
+    "C-x a"   "abbrev"
+    "C-x n"   "narrow"
+    "C-x r"   "rectangle"
+    "C-x v"   "version control"
+    "C-c &"   "yas"
+    "C-c @"   "hide-show"
+    "M-SPC h" "info"
+    "M-SPC g" "grep"
+    "M-SPC M-s" "occur"))
+
+(fort-define-keys
+ :map fort-keymap
+ :simple
+  ("SPC b" 'ivy-switch-buffer
+   "SPC <tab>" 'sam-switch-to-other-buffer))
 
 (provide 'sam-keybindings)
 ;;; sam-keybindings.el ends here

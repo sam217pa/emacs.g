@@ -27,6 +27,7 @@
 
 (require 'cl-lib)
 (require 'sam-utils)
+(require 'pause)
 
 ;;;; Custom
 
@@ -47,45 +48,10 @@
 
 (declare-function LaTeX-narrow-to-environment "auctex") ; silence byte-compiler
 
-;;;; propertize prompt
-;; A function to propertize a prompt with simple cookies, like it's done
-;; in the mu4e package.
-
-(defun propertize-prompt (prompt)
-    "Add text properties to special cookies in PROMPT.
-
-Highlight text between square brackets with `highlight',
-between round brackets with `font-lock-builtin-face',
-between curly brackets with `font-lock-constant-face'."
-    (let ((str prompt)
-          (regexp-colors '(("\\[[-_A-Za-z0-9=]+\\]" . 'highlight)
-                           ("([-_A-Za-z0-9=]+)"     . 'font-lock-builtin-face)
-                           ("{[-_A-Za-z0-9=]+}"     . 'font-lock-constant-face))))
-      (cl-loop for re-color in regexp-colors do
-               (let ((start 0))
-                 (while (string-match (car re-color) str start)
-                   (let ((beg (1+ (match-beginning 0)))
-                         (end (1- (match-end 0))))
-                     (setq start end)
-                     (add-text-properties
-                      beg end
-                      `(face ,(cdr re-color))
-                      str)))))
-      str))
-
 ;;; frame transparency adjustment
 
-(defun sam--set-alpha! (inc)
-  (let* ((alpha (frame-parameter (selected-frame) 'alpha))
-         (next-alpha (cond ((not alpha) 100)
-                           ((> (- alpha inc) 100) 100)
-                           ((< (- alpha inc) 0) 0)
-                           (t (- alpha inc)))))
-    (set-frame-parameter (selected-frame) 'alpha next-alpha)
-    (call-interactively 'sam-adjust-alpha)))
-
 ;;;###autoload
-(defun sam-adjust-alpha (x)
+(defun sam-adjust-alpha ()
   "Adjust the frame transparence.
 
 - Decrease with fine or coarse grain with s and S,
@@ -93,23 +59,34 @@ between curly brackets with `font-lock-constant-face'."
 - Set to X with =.
 - Reset with 0.
 - Escape with C-g."
-  (interactive
-   (list
-    (read-key
-     (propertize-prompt
-      (concat (format "(%s)" (frame-parameter (selected-frame) 'alpha))
-              " Increase [tT] / Decrease [sS] / Set-to [=] / Reset [0] / (C-g) Escape")))))
-  (pcase x
-    (?t (sam--set-alpha! +1))
-    (?s (sam--set-alpha! -1))
-    (?T (sam--set-alpha! +10))
-    (?S (sam--set-alpha! -10))
-    (?= (set-frame-parameter
-         (selected-frame) 'alpha
-         (read-number "Set to : ")))
-    (?0 (set-frame-parameter (selected-frame) 'alpha 100))
-    (?\C-g nil)
-    (_ (call-interactively 'sam-adjust-alpha))))
+  (interactive)
+  (cl-symbol-macrolet
+      ((alpha (frame-parameter (selected-frame) 'alpha)))
+    (pause t
+      (pause-prompt
+       "Adjust alpha:\nIncrease [t] / Decrease [s] / Reset [r]")
+      "t" (set-frame-parameter (selected-frame) 'alpha (1- alpha))
+      "s" (set-frame-parameter (selected-frame) 'alpha (1+ alpha))
+      "r" (set-frame-parameter (selected-frame) 'alpha 100))))
+
+(defun sam-adjust-line-spacing ()
+  "Adjust between line space"
+  (interactive)
+  (pause t
+    (pause-prompt
+     "Line spacing:\nIncrease [t] / Decrease [s]")
+    "t" (cl-incf line-spacing)
+    "s" (cl-decf line-spacing)))
+
+(defun sam-adjust-font-size ()
+  "Adjust font size. duh."
+  (interactive)
+  (pause t
+    (pause-prompt
+     "Font size:\nIncrease [t] / Decrease [s] / Reset [r]")
+    "t" (text-scale-increase +1)
+    "s" (text-scale-decrease +1)
+    "r" (text-scale-set 0)))
 
 ;;;###autoload
 (defun sam-kill-word-at-point (arg)
@@ -308,19 +285,16 @@ Try the repeated popping up to 10 times."
 
 ;;;###autoload
 (defun sam-maximize-window ()
-  "Maximize frame on first use, toggle frame fullscreen on second
-consecutive use."
+  "Maximize frame and window."
   (interactive)
-  (let* ((second? (eq last-command this-command))
-         (fullscreen (frame-parameter nil 'fullscreen))
-         (maximized? (eq 'maximized fullscreen))
-         (fullscreen? (eq 'fullboth fullscreen)))
-    (cond ((and second? maximized?)
-           (toggle-frame-fullscreen))
-          (fullscreen?
-           (toggle-frame-fullscreen))
-          (t
-           (toggle-frame-maximized)))))
+  (toggle-frame-maximized)
+  (pause t
+    (pause-prompt
+     (format "FRAME:\nm[a]ximise, f[u]ll-screen, [%s] toggle" (pause-this-key)))
+    "a" (toggle-frame-maximized)
+    "u" (toggle-frame-fullscreen)
+    "i" (toggle-frame-maximized)
+    (pause-this-key) (toggle-frame-maximized)))
 
 ;;;###autoload
 (defun sam-main-window (&optional frame)
@@ -637,6 +611,23 @@ Lisp function does not specify a special indentation."
                                         indent-point normal-indent))
                  (method
                   (funcall method indent-point state)))))))))
+
+(defun sam--correct-typography ()
+  (cl-flet
+      ((correct (str rep)
+                (let ((l (length str)))
+                  (when (looking-back str (- (point) l))
+                    (delete-char (- l))
+                    (insert rep)))))
+    (cl-loop
+     for el in sam--correct-typography
+     collect (correct (car el) (cdr el)))))
+
+(defvar sam--correct-typography
+  '(("ae" . "æ")
+    ("oe" . "œ")))
+
+(add-hook 'post-self-insert-hook #'sam--correct-typography)
 
 (provide 'sam-helpers)
 ;;; sam-helpers.el ends here

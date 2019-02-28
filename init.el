@@ -138,6 +138,7 @@
   :config (column-number-mode))
 
 (progn ;    `text-mode'
+  (add-hook 'text-mode-hook #'auto-fill-mode)
   (add-hook 'text-mode-hook #'indicate-buffer-boundaries-left))
 
 (use-package tramp

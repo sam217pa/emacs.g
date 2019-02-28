@@ -25,18 +25,37 @@
 ;;; Code:
 
 (require 'sam-keybindings)
+(require 'sam-utils)
 (require 'calendar)
-(require 'todo-mode)
+;; (require 'todo-mode)
 
 (sam-set-custom
   calendar-date-style 'iso)
 
+(defun sam-todo ()
+  (interactive)
+  (let ((buf (find-file-noselect "TODO")))
+    (with-current-buffer buf
+      (org-mode)
+      (setq-local fill-column 42)
+      (text-scale-decrease 2))
+    (sam-side-buffer buf
+        `((side          . right)
+          (slot          . 1)
+          (window-width  . fit-window-to-buffer)
+          (preserve-size . (t . nil)) ,sam--parameters))))
+
+(defun sam-todo-insert ()
+  (interactive)
+  (sam-todo)
+  (goto-char (point-max))
+  (call-interactively #'org-insert-todo-heading))
+
 (sam-defkeys
   "C-c c" 'calendar
   "C-c d" 'diary
-  "C-c t" 'todo-show
-  "C-c j" 'todo-jump-to-category
-  "C-c i" 'todo-insert-item)
+  "C-c t" 'sam-todo
+  "C-c i" 'sam-todo-insert)
 
 (provide 'sam-todo)
 ;;; sam-todo.el ends here

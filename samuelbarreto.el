@@ -39,7 +39,7 @@
 (use-package sam-defaults
   :load-path "~/.emacs.d/lisp/"
   :custom
-  (sam-font "Unifont 14")
+  (sam-font "Inconsolata")
   (sam-variable-pitch-font "Input Sans Narrow")
   (sam-use-variable-pitch-font nil)
   (sam-theme 'zenburn)
@@ -81,11 +81,6 @@
         (ansi-color-apply-on-region compilation-filter-start (point-max))))
     (add-hook 'compilation-filter-hook 'my-colorize-compilation-buffer)))
 
-(use-package autoinsert
-  :commands (auto-insert
-             auto-insert-mode))
-
-
 (use-package bicycle
   :after outline
   :bind (:map outline-minor-mode-map
@@ -95,15 +90,6 @@
 
 (use-package comment-dwim-2
   :bind* ("M-;" . comment-dwim-2))
-
-
-(use-package compile
-  :commands (compile)
-  :bind (:map compilation-mode-map
-         ("t" . compilation-next-error)
-         ("s" . compilation-previous-error)
-         ("r" . compile-goto-error)))
-
 
 (use-package conf-mode
   :mode (("DESCRIPTION" . conf-mode)
@@ -136,12 +122,6 @@
               :action (lambda (x) (set-frame-font x)))))
 
 
-(use-package counsel-projectile
-  :commands (counsel-projectile-mode)
-  :bind* (("H-p" . counsel-projectile-switch-project)
-          ("s-f" . counsel-projectile-find-file)))
-
-
 (use-package cwl-mode
   :mode ("\\.cwl\\'" . cwl-mode))
 
@@ -149,97 +129,6 @@
 (use-package debian-control-mode
   :load-path "/Users/samuelbarreto/dotfile/emacs/private/dcf/"
   :mode (("DESCRIPTION" . debian-control-mode)))
-
-(use-package elfeed-org
-  :commands (elfeed-org)
-  :init
-  (setq rmh-elfeed-org-files '("~/dotfile/emacs/elfeed.org"))
-  :config
-  (elfeed-org))
-
-(use-package elfeed
-  :functions (elfeed-next-tag
-              elfeed-mark-all-as-read
-              counsel-elfeed--update-tag)
-  :commands (elfeed-update-filter
-	         elfeed-search-update
-	         elfeed-search-set-filter)
-  :bind* (("<f6>" . elfeed)
-          ("C-c E" . elfeed)
-          :map elfeed-search-mode-map
-          ("N" . elfeed-next-tag)
-          ("R" . elfeed-mark-all-as-read)
-          ("U" . elfeed-search-fetch))
-  :config
-  (elfeed-org)
-  ;; increase title width to accomodate papers
-  (setq elfeed-search-title-max-width 120)
-
-  (setq elfeed-db-directory "~/dotfile/emacs/elfeed/")
-
-  (defvar counsel-elfeed-tags
-    '(("papers" . "+papers")
-      ("biology" . "+bio")
-      ("bioinfo" . "+bioinfo")
-      ("computer science" . "+compsci")
-      ("package update" . "+pkg")
-      ("rstat" . "+rstat")
-      ("emacs" . "+emacs")
-      ("news" . "+news")
-      ("communisme libertaire" . "+anar")
-      ("communisme marxiste" . "+communisme"))
-    "This is a list of tag for elfeed filtering.")
-
-  (defun elfeed-update-filter (x)
-    (setf elfeed-search-filter
-          (concat "@6-months-ago +unread " x))
-    (elfeed-search-update :force))
-
-  (defun elfeed-mark-all-as-read ()
-    (interactive)
-    (call-interactively #'mark-whole-buffer) ;to prevent compiler warnings
-    (elfeed-search-untag-all-unread))
-
-  (defun elfeed-next-tag ()
-    (interactive)
-    (let* ((elfeed-tag-list
-            (with-current-buffer
-                (find-file-noselect (expand-file-name (car rmh-elfeed-org-files)))
-              (org-mode)
-              (mapcar
-               (lambda (x) (concat "+" x))
-               (cdr (reverse (mapcar #'car (org-get-buffer-tags)))))))
-           (current-tag
-            (car (last (split-string elfeed-search-filter))))
-           (new-tag
-            (cadr (member current-tag elfeed-tag-list))))
-      (if new-tag
-          (elfeed-update-filter new-tag)
-        (elfeed-update-filter (car elfeed-tag-list)))))
-
-  (defun counsel-elfeed--update-tag (x)
-    "Update the elfeed filter with the last 10 char of ivy selection."
-    (elfeed-search-set-filter
-     (concat "@6-months-ago +unread " x)))
-
-  (defun counsel-elfeed-tag ()
-    "Shows a list of elfeed tags I like to browse."
-    (interactive)
-    (ivy-read "%d Elfeed tag: "
-              (with-current-buffer
-                  (find-file-noselect (expand-file-name (car rmh-elfeed-org-files)))
-                (org-mode)
-                (mapcar
-                 (lambda (x) (concat "+" x))
-                 (cdr (reverse (mapcar #'car (org-get-buffer-tags))))))
-              :require-match t
-              :action #'counsel-elfeed--update-tag
-              :update-fn (lambda ()
-                           (counsel-elfeed--update-tag (ivy-state-current ivy-last)))
-              :caller 'counsel-elfeed-tag
-              :sort t))
-
-  (setq-default elfeed-search-filter "@6-months-ago +unread"))
 
 
 (use-package elisp-mode
@@ -344,36 +233,10 @@
   (expand-region-fast-keys-enabled t))
 
 
-(use-package flymake
-  :commands (flymake-mode
-             hydra-errors/body
-             flymake-goto-next-error
-             flymake-goto-prev-error)
-  :functions (hydra-errors/body)
-  :config
-  (defhydra hydra-errors (:body-pre (flymake-mode)
-                          :post (flymake-mode -1)
-                          :hint nil)
-    "
-Linting : [_n_]ext / [_p_]rev
-Errors  : [_t_]: next / [_s_]: prev
-Totos   : _C-n_: next / _C-p_: prev / _C-s_: search"
-    ("n" flymake-goto-next-error)
-    ("p" flymake-goto-prev-error)
-    ("t" next-error)
-    ("s" previous-error)
-    ("C-n" hl-todo-next)
-    ("C-p" hl-todo-previous)
-    ("C-s" hl-todo-occur)))
-
-
 (use-package flyspell
   :bind* (("C-c M-f" . flyspell-buffer)
           :map flyspell-mode-map
           ("C-c M-n" . flyspell-goto-next-error)))
-
-
-(use-package flx)
 
 
 (use-package geiser-install
@@ -702,27 +565,6 @@ abort completely with `C-g'."
   (magit-todos-mode))
 
 
-(use-package minions
-  :hook (after-init . minions-mode))
-
-
-(use-package moody
-  :commands (moody-replace-mode-line-buffer-identification
-             moody-replace-vc-mode)
-  :init
-  (setq x-underline-at-descent-line t)
-  (moody-replace-mode-line-buffer-identification)
-  (moody-replace-vc-mode))
-
-
-(use-package nim-mode
-  :mode ("\\.nim\\'" . nim-mode))
-
-(use-package nim-suggest
-  :after nim-mode
-  :hook ((nim-mode . nimsuggest-mode)
-         (nimsuggest-mode . flymake-mode)))
-
 (use-package outline
    :custom
    (outline-minor-mode-prefix (kbd "C-."))
@@ -753,14 +595,6 @@ abort completely with `C-g'."
   :hook (after-init . show-paren-mode))
 
 
-(use-package pathify
-  :after dired
-  :bind* (:map dired-mode-map
-          ("L" . pathify-dired))
-  :custom
-  (pathify-directory "~/.local/bin/"))
-
-
 (use-package poporg
   :bind* (("C-c #" . poporg-dwim)))
 
@@ -770,15 +604,6 @@ abort completely with `C-g'."
   (add-hook 'prog-mode-hook 'display-line-numbers-mode)
   (add-hook 'prog-mode-hook 'outline-minor-mode)
   (add-hook 'prog-mode-hook 'hs-minor-mode))
-
-
-(use-package projectile
-  :commands (projectile-mode
-             projectile-find-file)
-  :bind* (("s-p" . projectile-switch-project))
-  :custom
-  (projectile-switch-project-action 'projectile-dired)
-  (projectile-completion-system 'ivy))
 
 
 (use-package rainbow-mode
@@ -980,17 +805,6 @@ frame.
 (use-package smex)
 
 
-(use-package spotlight
-  :bind* (("C-c C-s" . spotlight)
-          ("C-c C-S-s" . spotlight-fast))
-  :custom
-  (spotlight-tmp-file (no-littering-expand-var-file-name "spotlight-tmp-file")))
-
-
-(use-package string-edit
-  :bind* ("C-c s" . string-edit-at-point))
-
-
 (use-package swiper
   :bind* ("M-s" . swiper))
 
@@ -1032,41 +846,6 @@ frame.
     (visual-line-mode +1)
     (auto-fill-mode -1)))
 
-
-(use-package which-key
-  :defer 2
-  :diminish which-key-mode
-  :commands (which-key-mode
-             which-key-setup-side-window-bottom
-             which-key-add-key-based-replacements)
-  :custom
-  ;; simple then alphabetic order.
-  (which-key-sort-order 'which-key-prefix-then-key-order)
-  (which-key-popup-type 'side-window)
-  (which-key-side-window-max-height 0.3)
-  (which-key-side-window-max-width 0.5)
-  (which-key-idle-delay 0.3)
-  (which-key-min-display-lines 7)
-  :config
-  (which-key-mode)
-  (which-key-setup-side-window-bottom)
-  ;; key description for C-x
-  (which-key-add-key-based-replacements
-    "C-x RET" "coding system -input"
-    "C-x 4"   "Other Window"
-    "C-x 5"   "Frame"
-    "C-x 6"   "2C"
-    "C-x @"   "event"
-    "C-x 8"   "special char"
-    "C-x a"   "abbrev"
-    "C-x n"   "narrow"
-    "C-x r"   "rectangle"
-    "C-x v"   "version control"
-    "C-c &"   "yas"
-    "C-c @"   "hide-show"
-    "M-SPC h" "info"
-    "M-SPC g" "grep"
-    "M-SPC M-s" "occur"))
 
 (use-package xterm-color
   :config

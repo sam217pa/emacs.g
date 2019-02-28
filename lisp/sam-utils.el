@@ -76,5 +76,12 @@ maps key to value for each key-value pair in KV-PAIRS."
         (lambda (pair) `(custom-set-variables '(,@pair)))
         (sam--group args 2))))
 
+(defun sam-side-buffer (buffer &optional params)
+  "Display BUFFER in a side window with parameters PARAMS."
+  (declare (indent 2))
+  (display-buffer-in-side-window
+   buffer params)
+  (select-window (get-buffer-window buffer)))
+
 (provide 'sam-utils)
 ;;; sam-utils.el ends here

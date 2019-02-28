@@ -72,11 +72,22 @@
             (seq-filter
              (lambda (x) (not (or (cl-member (car x) excluded-targets :test 'string-equal)
                              (string-match "%" (car x)))))
-             targets)))
+             targets))
+           (m (seq-max (seq-map (lambda (x) (length (car x))) targets))))
         (insert "\n.PHONY: help\nhelp:\n")
         (mapcar
-         (lambda (x) (insert (format "\t$(info make %-10s -- )\n" (car x))))
+         (lambda (x)
+           (insert (format "\t$(info make %s%s -- )\n"
+                           (car x)
+                           (make-string (- m (length (car x))) ?\s))))
          targets)))))
+
+(use-package compile
+  :commands (compile)
+  :bind (:map compilation-mode-map
+         ("t" . compilation-next-error)
+         ("s" . compilation-previous-error)
+         ("r" . compile-goto-error)))
 
 (provide 'sam-compile)
 ;;; sam-compile.el ends here

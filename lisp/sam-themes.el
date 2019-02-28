@@ -59,5 +59,8 @@ See also `sam-use-theme'."
   zenburn-theme nil)
 
 
+(use-package minions
+  :hook (after-init . minions-mode))
+
 (provide 'sam-themes)
 ;;; sam-themes.el ends here
