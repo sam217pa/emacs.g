@@ -1,9 +1,9 @@
-;;; sam-cc-mode.el --- c programming                 -*- lexical-binding: t; -*-
+;;; sam-evil.el --- evil keybindings                 -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Samuel Barreto
 
 ;; Author: Samuel Barreto <samuel.barreto8@gmail.com>
-;; Keywords: c, prog
+;; Keywords: evil, keybindings
 
 ;; This program is free software; you can redistribute it and/or modify
 ;; it under the terms of the GNU General Public License as published by
@@ -20,23 +20,14 @@
 
 ;;; Commentary:
 
-;; This is my customisation for editing c code. Fortunately, emacs is
-;; very well suited to programming C, so I don't have to customise
-;; that much. I just added ggtags, browsing with GNU Globals is very
-;; much to my linking. I would be glad to be able to browse distant
-;; sources, like the libguile.h headers, but I still can't tailor
-;; ggtags to do that. Maybe with another LSP backend, like eglot.
+;;
 
 ;;; Code:
 
-(use-package eglot
-  :commands (eglot-ensure))
+(require 'general)
+(require 'evil)
 
-(use-package ggtags
-  :hook ((cc-mode . ggtags-mode)))
+(evil-mode -1)
 
-(add-hook! 'cc-mode-hook
-  (setq-local company-transformers nil))
-
-(provide 'sam-cc-mode)
-;;; sam-cc-mode.el ends here
+(provide 'sam-evil)
+;;; sam-evil.el ends here

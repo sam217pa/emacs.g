@@ -138,8 +138,8 @@
   :config (column-number-mode))
 
 (progn ;    `text-mode'
-  (add-hook 'text-mode-hook #'auto-fill-mode)
-  (add-hook 'text-mode-hook #'indicate-buffer-boundaries-left))
+  (add-hook 'text-mode-hook #'indicate-buffer-boundaries-left)
+  (add-hook 'text-mode-hook #'toggle-word-wrap))
 
 (use-package tramp
   :defer t
@@ -172,3 +172,4 @@
 ;; End:
 ;;; init.el ends here
 (put 'downcase-region 'disabled nil)
+(put 'dired-find-alternate-file 'disabled nil)

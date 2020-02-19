@@ -83,5 +83,50 @@ maps key to value for each key-value pair in KV-PAIRS."
    buffer params)
   (select-window (get-buffer-window buffer)))
 
+(defmacro define-after-save-hook-mode (name fun &optional lighter docstring)
+  "Define a minor mode named NAME-after-save-mode that will run
+FUN each time buffer is saved.
+
+Minor mode has lighter LIGHTER and is documented by DOCSTRING."
+    (declare (doc-string 4))
+    (let ((toggler (intern (format "%s--toggle" name)))
+          (mmode   (intern (format "%s-after-save-mode" name))))
+      `(progn
+         (defun ,toggler (toggle)
+           (pcase toggle
+             (:on  (add-hook    'after-save-hook ,fun nil t))
+             (:off (remove-hook 'after-save-hook ,fun t    ))))
+
+         (define-minor-mode ,mmode
+           ,docstring
+           nil ,lighter nil
+           (if ,mmode (,toggler :on) (,toggler :off))))))
+
+(defun sam-append-string-to-file (string file)
+  "Add STRING to end of FILE"
+  (with-current-buffer (find-file-noselect file)
+    (goto-char (point-max))
+    (insert string)
+    (save-buffer)
+    (kill-current-buffer)))
+
+(defun sam--read-table (file)
+  "Return contents of FILE as list of string, one element per
+line."
+  (with-current-buffer (find-file-noselect file)
+    (unwind-protect
+        (split-string
+         (buffer-substring-no-properties (point-min) (point-max)))
+      (kill-current-buffer))))
+
+(defsubst sam-concat (seq sep)
+  "Concatenate sequence SEQ using SEP as separator"
+  (mapconcat #'identity seq sep))
+
+(defsubst add-to-hook (hook &rest funs)
+  "Add FUNS to HOOK in a single run."
+  (declare (indent 1))
+  (mapcar (lambda (f) (add-hook hook f)) funs))
+
 (provide 'sam-utils)
 ;;; sam-utils.el ends here

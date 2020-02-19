@@ -1,7 +1,7 @@
 ;;; sam.el --- personal package                      -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2019  Samuel Barreto
-;; Time-stamp: <2019-02-18 14:03:00 samuelbarreto>
+;; Time-stamp: <2019-11-17 17:09:53 samuelbarreto>
 
 ;; Version: 0.1
 ;; Author: Samuel Barreto <samuel.barreto8@gmail.com>
@@ -46,11 +46,14 @@
 (require 'sam-news)
 (require 'sam-org)
 (require 'sam-prog)
+(require 'sam-python)
 (require 'sam-text)
 (require 'sam-themes)
 (require 'sam-todo)
 (require 'sam-utils)
 (require 'sam-viridis)
+
+(require 'intcrement)
 
 (provide 'sam)
 ;;; sam.el ends here

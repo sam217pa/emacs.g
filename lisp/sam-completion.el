@@ -25,6 +25,28 @@
 ;;; Code:
 
 (require 'ivy)
+(require 'ivy-overlay)
+(require 'company)
+
+(setq company-tooltip-align-annotations t)
+(setq company-idle-delay 0.2
+      company-selection-wrap-around t
+      company-minimum-prefix-length 3
+      company-require-match nil
+      company-dabbrev-ignore-case nil
+      company-dabbrev-downcase nil
+      company-show-numbers t)
+
+(bind-keys :map company-active-map
+  ("C-d" . company-show-doc-buffer)
+  ("C-l" . company-show-location)
+  ("C-n" . company-select-next)
+  ("C-p" . company-select-previous)
+  ("C-t" . company-select-next)
+  ("C-s" . company-select-previous)
+  ("TAB" . company-complete))
+
+(add-hook 'prog-mode-hook 'company-mode)
 
 (defun sam-load-theme ()
   "Helper for `counsel-load-theme' that pops up theme in an

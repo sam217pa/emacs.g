@@ -39,12 +39,7 @@
 (use-package sam-defaults
   :load-path "~/.emacs.d/lisp/"
   :custom
-  (sam-font "Inconsolata")
-  (sam-variable-pitch-font "Input Sans Narrow")
-  (sam-use-variable-pitch-font nil)
-  (sam-theme 'zenburn)
-  :init
-  (sam-initialize!)
+  (sam-theme 'spacemacs-dark)
   :hook
   (after-init . sam-initialize!))
 
@@ -106,12 +101,22 @@
           ("M-x" . counsel-M-x))
   :config
   (setq counsel-find-file-ignore-regexp
-        (concat "\\(?:\\`[#.]\\)\\|\\(?:[#~]\\'\\)"
-                "\\|\\.x\\'\\|\\.d\\'\\|\\.o\\'"
-                "\\|\\.aux\\'"))
+        dired-garbage-files-regexp)
 
   (setq counsel-locate-cmd 'counsel-locate-cmd-mdfind)
   (setq counsel-find-file-at-point t)
+
+  (defun counsel-font-headings ()
+    "Change font of variable pitch."
+    (interactive)
+    (ivy-read
+     "Chose font :"
+     (font-family-list)
+     :caller 'counsel-font-headings
+     :action
+      (lambda (x)
+        (set-face-attribute 'variable-pitch nil
+                            :family x :height 120))))
 
   (defun counsel-font ()
     "Change font of current frame"
@@ -125,6 +130,11 @@
 (use-package cwl-mode
   :mode ("\\.cwl\\'" . cwl-mode))
 
+(use-package deadgrep
+  :bind* (("C-c /" . deadgrep))
+  :bind (:map deadgrep-mode-map
+         ("s" . deadgrep)))
+
 
 (use-package debian-control-mode
   :load-path "/Users/samuelbarreto/dotfile/emacs/private/dcf/"
@@ -136,8 +146,8 @@
   :bind (:map emacs-lisp-mode-map
          ("A-j" . use-package-jump))
   :init
-  (add-hook! 'emacs-lisp-mode-hook
-    (setq-local lisp-indent-function #'sam-lisp-indent-function))
+  (add-hook 'emacs-lisp-mode-hook
+            (lambda () (setq-local lisp-indent-function #'sam-lisp-indent-function)))
   :config
   (defun use-package-jump--list-calls ()
     (let ((packages))
@@ -158,62 +168,6 @@
       (goto-char (cdr (assoc (ivy-completing-read "Package: " packages)
                              packages))))))
 
-
-(use-package ess
-  :mode ("\\.R\\'" . ess-r-mode)
-  :custom
-  (ess-eval-visibly nil)
-  (ess-offset-continued 2)
-  (ess-expression-offset 2)
-  (ess-nuke-trailing-whitespace-p t)
-  (ess-default-style 'RStudio)
-  (ess-help-reuse-window t)
-  (ess-use-ido nil)
-  (ess-R-font-lock-keywords '((ess-R-fl-keyword:keywords . t)
-                              (ess-R-fl-keyword:constants . t)
-                              (ess-R-fl-keyword:modifiers . t)
-                              (ess-R-fl-keyword:fun-defs . t)
-                              (ess-R-fl-keyword:assign-ops . t)
-                              (ess-fl-keyword:fun-calls . t)
-                              (ess-fl-keyword:numbers . t)
-                              (ess-fl-keyword:operators . t)
-                              (ess-fl-keyword:delimiters . t)
-                              (ess-fl-keyword:= . t)
-                              (ess-R-fl-keyword:F&T . t)
-                              (ess-R-fl-keyword:%op% . t)))
-  :bind* (:map ess-mode-map
-          ("RET" . ess-newline-and-indent)
-          ("S-<return>" . ess-eval-line)
-          ("C-RET" . ess-eval-region-or-line)
-          ("M-RET" . ess-eval-function-or-paragraph)
-          ("C-c M-s" . ess-switch-process)
-          ("_" . self-insert-command)
-          (" " . ess-insert-assign)
-          (" " . ess-insert-assign))
-  :config
-  (add-hook! 'ess-mode-hook
-    (setq-local outline-regexp "^## \\*"))
-
-  (add-to-list 'hs-special-modes-alist
-               '(ess-r-mode "{" "}" "#[#']" nil nil))
-
-
-
-  (sp-local-pair
-   'ess-mode "{" nil
-   :post-handlers '((sam--create-newline-and-enter-sexp "RET")))
-  (sp-local-pair
-   'ess-mode "(" nil
-   :post-handlers '((sam--create-newline-and-enter-sexp "RET")))
-  (sp-local-pair 'ess-mode "%" "%")
-  (sp-local-pair 'ess-mode "`" "`" :actions '(wrap insert) :when '(sp-in-comment-p))
-
-  (defalias 'ess-set-width 'ess-execute-screen-options))
-
-
-(use-package ess-inf
-  :bind (:map inferior-ess-mode-map
-         ("_" . self-insert-command)))
 
 (use-package exec-path-from-shell
   :if (memq window-system '(mac ns))
@@ -237,13 +191,6 @@
   :bind* (("C-c M-f" . flyspell-buffer)
           :map flyspell-mode-map
           ("C-c M-n" . flyspell-goto-next-error)))
-
-
-(use-package geiser-install
-  :hook (scheme-mode . geiser-mode)
-  :custom
-  (geiser-active-implementation '(guile chez))
-  (geiser-scheme-dir "~/.emacs.d/lib/geiser/scheme"))
 
 
 (use-package ggo-mode
@@ -297,11 +244,6 @@
   :init
   (global-hungry-delete-mode))
 
-
-(use-package hy-mode
-  :mode ("\\.hy\\'" . hy-mode))
-
-
 (use-package hydra
   :demand t
   :commands (defhydra
@@ -322,7 +264,8 @@
     ("y" (yank-pop 1) "next")
     ("p" (yank-pop 1) "next")
     ("n" (yank-pop -1) "prev")
-    ("l" counsel-yank-pop "list" :color blue)))
+    ("k" counsel-yank-pop "list" :color blue)))
+
 
 (use-package ibuffer
   :bind* (("C-x C-b" . ibuffer))
@@ -367,8 +310,20 @@
 
   (setq-default ibuffer-saved-filter-groups
                 `(("Default"
-                   ("RStat" (or (mode . ess-mode)
+                   ("Perl" (or (mode . cperl-mode)))
+                   ("LaTeX" (or (mode . latex-mode)
+                                (mode . TeX-mode)
+                                (mode . LaTeX-mode)
+                                (mode . TeX-latex-mode)))
+                   ("Python" (or (mode . python-mode)
+                                 (mode . inferior-python-mode)))
+                   ("Julia" (or (mode . julia-mode)
+                                (mode . ess-julia-mode)
+                                (mode . inferior-julia-mode)
+                                (mode . inferior-ess-julia-mode)))
+                   ("RStat" (or (mode . ess-r-mode)
                                 (mode . inferior-ess-mode)
+                                (mode . inferior-ess-r-mode)
                                 (mode . Rd-mode)))
                    ("C / C++" (mode . c-mode))
                    ("Org" (mode . org-mode))
@@ -381,7 +336,10 @@
                                (mode . bbdb-mode)
                                (mode . mail-mode)
                                (mode . mu4e-compose-mode)))
-                   ("Elisp" (mode . emacs-lisp-mode))
+                   ("Lisp" (or (mode . emacs-lisp-mode)
+                               (mode . common-lisp-mode)
+                               (mode . lisp-mode)
+                               (name . "\\*inferior-lisp\\*")))
                    ("Scheme" (mode . scheme-mode))
                    ("shell" (or (mode . eshell-mode)
                                 (mode . shell-mode)))
@@ -467,7 +425,6 @@ abort completely with `C-g'."
                      bef aft (if p "loc" "glob")))
         (user-error "No typo at or before point")))))
 
-
 (use-package ivy
   :diminish ""
   :commands (ivy-mode)
@@ -480,7 +437,7 @@ abort completely with `C-g'."
   (ivy-count-format "(%d/%d) ")
   (ivy-use-virtual-buffers t)
   :config
-  (ivy-mode 1))
+  (ivy-mode))
 
 
 (use-package ivy-bibtex
@@ -515,36 +472,9 @@ abort completely with `C-g'."
              lorem-ipsum-insert-paragraphs))
 
 
-(use-package lesspy
-  :hook (ess-mode . lesspy-mode)
-  :bind (:map lesspy-mode-map
-         ("a" . lesspy-avy-jump)
-         ("p" . lesspy-eval-function-or-paragraph)
-         ("h" . lesspy-help)
-         ("l" . lesspy-eval-line)
-         ("L" . lesspy-eval-line-and-go)
-         ("e" . lesspy-eval-sexp)
-         ("E" . lesspy-avy-eval)
-         ("c" . lesspy-left)
-         ("t" . lesspy-down)
-         ("s" . lesspy-up)
-         ("r" . lesspy-right)
-         ("d" . lesspy-different)
-         ("m" . lesspy-mark)
-         ("x" . lesspy-execute)
-         ("u" . lesspy-undo)
-         ("z" . lesspy-to-shell)
-         ("(" . lesspy-paren)
-         ("»" . lesspy-forward-slurp)
-         ("«" . lesspy-backward-slurp)
-         ("#" . lesspy-comment)
-         ("'" . lesspy-roxigen)
-         ("C" . lesspy-cleanup-pipeline)
-         ("C-(" . lesspy-paren-wrap-next)))
-
-
 (use-package lua-mode
-  :mode ("\\.lua\\'" . lua-mode))
+  :mode ("\\.lua\\'" . lua-mode)
+  :custom (lua-default-application "luajit"))
 
 
 (use-package magit-gitflow
@@ -565,13 +495,18 @@ abort completely with `C-g'."
   (magit-todos-mode))
 
 
+(use-package transient
+  :functions (define-transient-command))
+
 (use-package outline
    :custom
    (outline-minor-mode-prefix (kbd "C-."))
    :functions (outline-narrow-to-subtree)
-   :commands (outline-minor-mode
+   :commands (outline-transient
+              outline-minor-mode
               outline-back-to-heading
               outline-end-of-subtree)
+   :bind* (("s-." . outline-transient))
    :config
    (defun outline-narrow-to-subtree ()
      "Narrow to region containing the current outline subtree."
@@ -581,6 +516,47 @@ abort completely with `C-g'."
 	  (progn (outline-end-of-subtree)
 	         (when (and (looking-at outline-regexp) (not (eobp))) (backward-char 1))
 	         (point))))
+
+   (define-transient-command outline-transient ()
+     "Navigate a document using transient"
+     :transient-suffix 'transient--do-stay
+     :transient-non-suffix 'transient--do-warn
+     ["Navigate"
+      :class transient-columns
+      ["Visible"
+       ("p" "prev visible heading" outline-previous-visible-heading)
+       ("n" "next visible heading" outline-next-visible-heading)]
+      ["Same level"
+       ("f" "forward" outline-forward-same-level)
+       ("b" "backward" outline-backward-same-level)]
+      ["Up/down"
+       ("u" "up" outline-up-heading)]]
+     ["Hide / show"
+      :class transient-columns
+      ["Hide"
+       ("h a" "all" outline-hide-body)
+       ("h e" "entry" outline-hide-entry)
+       ("h s" "subtree" outline-hide-subtree)
+       ("h b" "branches" outline-hide-leaves)
+       ("h o" "other" outline-hide-other)]
+      ["Show"
+       ("s a" "all" outline-show-all)
+       ("s e" "entry" outline-show-entry)
+       ("s s" "subtree" outline-show-subtree)
+       ("s b" "branches" outline-show-branches)
+       ("s c" "children" outline-show-children)]]
+     ["Edit"
+      :class transient-columns
+      ["Subtree"
+       ("m u" "promote" outline-promote)
+       ("m d" "demote" outline-demote)
+       ("m p" "move up" outline-move-subtree-up)
+       ("m n" "move down" outline-move-subtree-down)]
+      ["Entries"
+       ("e i" "insert head" outline-insert-heading)
+       ("e n" "narrow subtree" outline-narrow-to-subtree)
+       ("e m" "mark subtree" outline-mark-subtree)
+       ("e k" "kill headers" outline-headers-as-kill)]])
 
    (define-key
      outline-minor-mode-map
@@ -593,10 +569,6 @@ abort completely with `C-g'."
 
 (use-package paren
   :hook (after-init . show-paren-mode))
-
-
-(use-package poporg
-  :bind* (("C-c #" . poporg-dwim)))
 
 
 (use-package prog-mode
@@ -614,17 +586,6 @@ abort completely with `C-g'."
   :hook (prog-mode . rainbow-delimiters-mode))
 
 
-(use-package reftex
-  :after tex-site
-  ;; :bind (:map latex-mode-map
-  ;;             ("C-c [" . reftex-citation))
-  :hook (TeX-latex-mode . reftex-mode)
-  :custom
-  (reftex-default-bibliography
-   '("/Users/samuelbarreto/Dropbox/bibliography/references.bib"))
-  (reftex-cite-format 'biblatex))
-
-
 (use-package selected
   :demand t
   :commands (selected-global-mode)
@@ -632,6 +593,8 @@ abort completely with `C-g'."
               org-enwrap!
               selected-search)
   :bind (:map selected-keymap
+         ("i" . indent-region)
+         ("C-i" . indent-region)
          ("a" . align-regexp)
          ("A" . align)
          ("e" . er/expand-region)
@@ -706,18 +669,11 @@ frame.
           (recenter 0))))))
 
 
-(use-package shelter
-  :load-path "~/dotfile/emacs/private/shelter/"
-  :commands (camp-minor-mode
-             fort-minor-mode)
-  :custom
-  (shelter-text-remap-sentence-navigation t)
-  :hook ((scheme-mode . shelter-mode)
-         (emacs-lisp-mode . shelter-mode)
-         (ess-mode . shelter-mode)))
-
+(use-package lisp-mode
+  :mode ("\\.cl\\'" . common-lisp-mode))
 
 (use-package slime
+  :hook (common-lisp-mode-hook . slime-mode)
   :custom
   (inferior-lisp-program "/usr/local/bin/sbcl --noinform"))
 
@@ -725,8 +681,7 @@ frame.
 (use-package smartparens
   :diminish (smartparens-mode . "")
   :commands (smartparens-global-mode
-	         smartparens-strict-mode
-	         sp-local-pair
+             sp-local-pair
 	         sp-pair)
   :custom
   (sp-highlight-pair-overlay nil)
@@ -737,7 +692,8 @@ frame.
           ("C-M-d" . sp-down-sexp)
           ("C-M-a" . sp-backward-down-sexp)
           ("C-S-d" . sp-beginning-of-sexp)
-          ("C-S-a" . sp-end-of-sexp)
+          ("C-S-a" . #'sp-beginning-of-sexp)
+          ("C-S-e" . sp-end-of-sexp)
           ("C-M-e" . sp-up-sexp)
           ("C-M-u" . sp-backward-up-sexp)
           ("C-M-t" . sp-transpose-sexp)
@@ -749,18 +705,19 @@ frame.
           ("C-}"   . sp-slurp-hybrid-sexp)
           ("C-S-b" . sp-backward-symbol)
           ("C-S-f" . sp-forward-symbol)
-          ("C-ß"   . sp-splice-sexp))
-  :init
-  (add-hook! 'after-init-hook
-    (smartparens-global-mode))
-  (add-hook! 'prog-mode-hook
-    (smartparens-strict-mode))
-
+          ("C-ß"   . sp-splice-sexp)
+          ("C-M-S-c" . sp-raise-sexp))
+  :hook
+  ((after-init . smartparens-global-mode)
+   (prog-mode .  smartparens-strict-mode))
   :config
   ;; Only use smartparens in web-mode
   (sp-local-pair 'text-mode "« " " »" :trigger "«" :trigger-wrap "«")
 
+  (sp-local-pair 'cperl-mode "<" ">")
+
   (sp-local-pair 'markdown-mode "_" "_")
+  (sp-local-pair 'markdown-mode "“" "”")
   (sp-local-pair 'markdown-mode "**" "**")
   (sp-local-pair 'markdown-mode "`" "`")
   (sp-local-pair 'markdown-mode "\\<" "\\>")
@@ -779,7 +736,6 @@ frame.
   (sp-local-pair 'web-mode "{# "  " #}")
 
   (sp-local-pair 'org-mode "$" "$")
-  (sp-local-pair 'org-mode "=" "=")
   (sp-local-pair 'text-mode "--- " " ---" :trigger "—" :trigger-wrap "—")
 
   (sp-local-pair 'org-mode "/" "/" :actions '(wrap insert))
@@ -788,6 +744,7 @@ frame.
   (sp-pair "'" nil :actions :rem)
   (sp-pair "`" nil :actions :rem)
 
+  (sp-local-pair 'cperl-mode  "{" nil :post-handlers '((sam--create-newline-and-enter-sexp "RET")))
   (sp-local-pair 'c-mode  "{" nil :post-handlers '((sam--create-newline-and-enter-sexp "RET")))
   (sp-local-pair 'cc-mode "{" nil :post-handlers '((sam--create-newline-and-enter-sexp "RET")))
 
@@ -806,18 +763,12 @@ frame.
 
 
 (use-package swiper
-  :bind* ("M-s" . swiper))
-
-
-(use-package tex-site
-  :commands (TeX-tex-mode)
-  :mode (("\\.tex\\'" . TeX-tex-mode)
-         ("\\.cls\\'" . TeX-tex-mode))
-  :custom
-  (TeX-PDF-mode t)
-  (TeX-engine 'default)
-  (LaTeX-item-indent 2))
-
+  :bind* (:map swiper-isearch-map
+          ("C-s" . #'ivy-next-line)
+          ("C-r" . #'ivy-previous-line)
+          ("C-t" . #'ivy-yank-word)
+          :map global-map
+          ("M-s" . #'swiper-isearch)))
 
 (use-package undo-tree
   :demand t
@@ -838,10 +789,10 @@ frame.
 
 
 (use-package visual-fill-column
-  :commands (visual-fill-column-mode)
+  :bind* (("s-ç" . visual-fill-column-mode))
   :custom
   (visual-fill-column-width 72)
-  :init
+  :config
   (add-hook! 'visual-fill-column-mode-hook
     (visual-line-mode +1)
     (auto-fill-mode -1)))
@@ -853,6 +804,7 @@ frame.
   (add-hook 'comint-preoutput-filter-functions 'xterm-color-filter)
   (setq comint-output-filter-functions
         (remove 'ansi-color-process-output comint-output-filter-functions)))
+
 
 (use-package xsv
   :load-path "~/dotfile/emacs/private/xsv/"
@@ -878,14 +830,88 @@ frame.
   :after yasnippet
   :load-path "~/.emacs.d/lisp/")
 
+(use-package fasd
+  :after exec-path-from-shell
+  :hook
+  (after-init . global-fasd-mode)
+  :bind
+  ("s-r" . #'fasd-find-file))
+
+(use-package rect
+  :bind (:map rectangle-mark-mode-map
+         ("k" . #'kill-rectangle)
+         ("DEL" . #'kill-rectangle)))
+
+(use-package winner
+  :hook (after-init . winner-mode)
+  :config
+  (defhydra hydra-winner (:hint nil)
+    ""
+    ("u" #'winner-undo "undo")
+    ("<left>" #'winner-undo "undo")
+    ("r" #'winner-redo "redo")
+    ("<right>" #'winner-redo "redo"))
+  (define-key winner-mode-map (kbd "C-c <left>") #'hydra-winner/winner-undo)
+  (define-key winner-mode-map (kbd "C-c <right>") #'hydra-winner/winner-redo))
+
+(use-package pdf-view
+  :mode ("\\.pdf\\'" . pdf-view-mode))
+
+(use-package spaceline-config
+  :config
+  (spaceline-spacemacs-theme)
+  (spaceline-toggle-minor-modes-off))
+
+(use-package nov
+  :mode ("\\.epub\\'" . nov-mode)
+  :config
+  (require 'justify-kp)
+  (setq nov-text-width most-positive-fixnum)
+
+  (defun sam-nov-font-setup ()
+    (face-remap-add-relative 'variable-pitch
+                             :family "ETBembo"
+                             :height 1.5))
+  (add-hook 'nov-mode-hook 'sam-nov-font-setup)
+
+  (defun sam-nov-window-configuration-change-hook ()
+    (sam-nov-post-html-render-hook)
+    (remove-hook 'window-configuration-change-hook
+                 'sam-nov-window-configuration-change-hook
+                 t))
+
+  (defun sam-nov-post-html-render-hook ()
+    (if (get-buffer-window)
+        (let ((max-width (pj-line-width))
+              buffer-read-only)
+          (save-excursion
+            (goto-char (point-min))
+            (while (not (eobp))
+              (when (not (looking-at "^[[:space:]]*$"))
+                (goto-char (line-end-position))
+                (when (> (shr-pixel-column) max-width)
+                  (goto-char (line-beginning-position))
+                  (pj-justify)))
+              (forward-line 1))))
+      (add-hook 'window-configuration-change-hook
+                'sam-nov-window-configuration-change-hook
+                nil t)))
+
+  (add-hook 'nov-post-html-render-hook 'sam-nov-post-html-render-hook))
+
+(use-package plain-org-wiki
+  :custom
+  (plain-org-wiki-directory "~/wiki"))
 
 ;;;; Personnal functions
 
 (use-package sam
   :load-path "~/.emacs.d/lisp/")
 
-(add-hook! 'after-init
-  (load (no-littering-expand-etc-file-name "custom.el")))
+(load (no-littering-expand-etc-file-name "custom.el"))
+
+(eval-after-load 'info
+  '(add-to-list 'Info-directory-list "/usr/local/share/info"))
 
 (provide 'samuelbarreto)
 ;;; samuelbarreto.el ends here

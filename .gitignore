@@ -5,3 +5,7 @@
 /var
 *.elc
 etc/
+/lisp/.juliahistory
+elpy/
+todo/
+transient/

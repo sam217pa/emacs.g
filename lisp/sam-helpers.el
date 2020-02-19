@@ -28,6 +28,8 @@
 (require 'cl-lib)
 (require 'sam-utils)
 (require 'pause)
+(require 'cf)
+(require 'thingatpt)
 
 ;;;; Custom
 
@@ -60,14 +62,17 @@
 - Reset with 0.
 - Escape with C-g."
   (interactive)
-  (cl-symbol-macrolet
-      ((alpha (frame-parameter (selected-frame) 'alpha)))
+  (cl-flet
+      ((alpha () (frame-parameter (selected-frame) 'alpha))
+       (alpha! (x)
+         (unless (or (> x 100) (> 0 x))
+           (set-frame-parameter (selected-frame) 'alpha x))))
     (pause t
       (pause-prompt
        "Adjust alpha:\nIncrease [t] / Decrease [s] / Reset [r]")
-      "t" (set-frame-parameter (selected-frame) 'alpha (1- alpha))
-      "s" (set-frame-parameter (selected-frame) 'alpha (1+ alpha))
-      "r" (set-frame-parameter (selected-frame) 'alpha 100))))
+      "t" (alpha! (1- (alpha)))
+      "s" (alpha! (1+ (alpha)))
+      "r" (alpha! 100))))
 
 (defun sam-adjust-line-spacing ()
   "Adjust between line space"
@@ -128,6 +133,8 @@ is already narrowed."
          (ignore-errors (outline-narrow-to-subtree)))
         ((derived-mode-p 'latex-mode)
          (LaTeX-narrow-to-environment))
+        ((derived-mode-p 'ess-mode)
+         (ess-narrow-to-defun-or-para))
         (t (narrow-to-defun))))
 
 ;;;###autoload
@@ -140,17 +147,32 @@ is already narrowed."
 ;;;; open file in external app
 
 ;;;###autoload
-(defun sam-open-in-external-app ()
+(defun sam-open-in-external-app (&optional arg)
   "Open current file in external application."
-  (interactive)
-  (let ((file-path (cond ((eq major-mode 'dired-mode)
+  (interactive "P")
+  (let* ((file-path (cond ((eq major-mode 'dired-mode)
                           (dired-get-file-for-visit))
                          ((ffap-file-at-point))
                          (t
-                          (buffer-file-name)))))
+                          (buffer-file-name))))
+         (app (if arg
+                  (format "-a %s"
+                          (shell-quote-argument
+                           (ivy-read "Choose app: " sam--external-app-list)))
+                ""))
+         (cmd (format "open %s %s" app
+                      (shell-quote-argument file-path))))
     (if file-path
-        (shell-command (format "open \"%s\"" file-path))
+        (shell-command cmd)
       (message "No file associated to this buffer."))))
+
+(defvar sam--external-app-list
+  (split-string
+   (sam-shell-command-to-string
+    "find /Applications/ -maxdepth 1 -iname *.app | sort | sed -e 's:/Applications/::g' -e 's:\\.app::g'") "\n")
+  "List of applications in the top /Applications directory")
+
+
 
 ;;;###autoload
 (defun sam-reveal-in-finder ()
@@ -290,7 +312,9 @@ Try the repeated popping up to 10 times."
   (toggle-frame-maximized)
   (pause t
     (pause-prompt
-     (format "FRAME:\nm[a]ximise, f[u]ll-screen, [%s] toggle" (pause-this-key)))
+     (format "FRAME:\n[b]ottomize, unb[o]ttomize,\nm[a]ximise, f[u]ll-screen, [%s] toggle" (pause-this-key)))
+    "b" (sam-bottomize)
+    "o" (sam-unbottomize)
     "a" (toggle-frame-maximized)
     "u" (toggle-frame-fullscreen)
     "i" (toggle-frame-maximized)
@@ -345,13 +369,13 @@ frame."
 
 (defun sam--completion-collection (col)
   (mapcar (lambda (x)
-            (concat (propertize (car x) 'font-lock-face '(:foreground "#268bd2"))
-                    " => "
+            (concat (format "%-30s" (propertize (concat (car x) "|")
+                                                 'font-lock-face '(:foreground "#268bd2")))
                     (propertize (cadr x) 'face 'slanted)))
           col))
 
 (defun sam--completion-collection-out (candidate)
-  (substring-no-properties candidate 0 (string-match " => " candidate)))
+  (substring-no-properties candidate 0 (string-match "|" candidate)))
 
 ;;;###autoload
 (defun sam-screenshot-theme! ()
@@ -419,6 +443,21 @@ frame."
   "Open a dired buffer into my ibio session"
   (interactive)
   (find-file "/ssh:samuel.barreto@ibio.univ-lyon1.fr:/home/pers/samuel.barreto/"))
+
+(defun sam-pbil-home ()
+  "Open a dired buffer into my pbil-deb session"
+  (interactive)
+  (find-file "/ssh:sbarreto@pbil-deb.univ-lyon1.fr:/beegfs/home/sbarreto/"))
+
+(defun sam-pbil-data ()
+  "Open a dired buffer into my pbil-deb session"
+  (interactive)
+  (find-file "/ssh:sbarreto@pbil-deb.univ-lyon1.fr:/beegfs/data/sbarreto/"))
+
+(defun sam-pbil-gates ()
+  "Open a dired buffer into my pbil-gates session"
+  (interactive)
+  (find-file "/ssh:sbarreto@pbil-gates.univ-lyon1.fr:/beegfs/home/sbarreto/"))
 
 ;; TODO: make this work over tramp or something
 (defun sam-rsync-ibio (fap)
@@ -627,7 +666,203 @@ Lisp function does not specify a special indentation."
   '(("ae" . "æ")
     ("oe" . "œ")))
 
-(add-hook 'post-self-insert-hook #'sam--correct-typography)
+;; (add-hook 'post-self-insert-hook #'sam--correct-typography)
+
+(defmacro set-current-frame-parameters (&rest params)
+  `(progn
+     ,@(mapcar
+        (lambda (x) `(set-frame-parameter (selected-frame) ,@x))
+        (sam--group params 2))))
+
+(defun sam-bottomize ()
+  (interactive)
+  (set-current-frame-parameters
+   'undecorated t
+   'alpha 85)
+  (setq-local mode-line-format nil))
+
+(defun sam-unbottomize ()
+  (interactive)
+  (set-current-frame-parameters
+   'undecorated nil
+   'alpha 100)
+  (setq-local mode-line-format (default-value 'mode-line-format)))
+
+;;
+(defun sam--org-capture-kill (&optional frame)
+  "Kill frame after exiting org-capture when frame name is \"*sam-note*\""
+  (when (cl-equalp (frame-parameter (or frame (selected-frame))
+                                    'name)
+                   "*sam-note*")
+    (delete-frame (or frame (selected-frame)))))
+
+(add-hook 'org-capture-after-finalize-hook #'sam--org-capture-kill)
+
+(defun sam--note-make-frame ()
+  "Create a frame with name sam-note"
+  (make-frame '((name . "*sam-note*")
+                (width . 60)
+                (height . 20))))
+
+(defun sam-note ()
+  "Add notes into my main note taking buffer in a temporary frame."
+  (interactive)
+  (with-current-frame (sam--note-make-frame)
+    (with-temp-buffer
+      (org-capture nil "n")
+      (text-scale-set -3)
+      (setq-local fill-column 52)
+      (delete-other-windows)
+      (sam-bottomize))))
+
+(defmacro reset-value (x)
+  "Reset local value of X to its default value"
+  `(setq-local ,x (default-value ',x)))
+
+(defun toggle-mode-line ()
+  "Toggle mode line. Duh."
+  (interactive)
+  (if mode-line-format
+      (setq-local mode-line-format nil)
+    (reset-value mode-line-format)))
+
+(defun sam-find-makefile ()
+  (interactive)
+  (find-file "Makefile"))
+
+(defun sam-compile-after-save ()
+  "Add a compile command to the local `after-save-hook'."
+  (interactive)
+  (add-hook 'after-save-hook
+            (lambda () (compile "make -k"))
+            nil t))
+
+(with-eval-after-load 'exec-path-from-shell
+  (defvar sam--raw-tex-pkg-list (sam-shell-command-to-string "tlmgr info --only-installed"))
+
+  (defvar sam-tex-pkg-list
+    (cl-loop for pkg in (split-string sam--raw-tex-pkg-list "\n")
+             collect (split-string (substring pkg 2) ":"))))
+
+(defun sam-tex-pkg-documentation (pkg)
+  (interactive
+   (list (sam--completion-collection-out
+          (ivy-read "Which package ? " (sam--completion-collection sam-tex-pkg-list)))))
+  (shell-command (format "texdoc %s" pkg) nil nil))
+
+(defun sam-memoir-manual ()
+  "Open the memoir latex package manual"
+  (interactive)
+  (sam-tex-pkg-documentation "memoir"))
+
+(defun sam-outline-sidebar ()
+  (interactive)
+  (let ((bn "*outline*"))
+    (when (get-buffer bn) (kill-buffer bn))
+    (let ((buf (make-indirect-buffer (current-buffer) bn t)))
+      (with-current-buffer buf
+        (outline-hide-body)
+        (text-scale-set -3))
+      (display-buffer-in-side-window
+       buf
+       `((side          . left)
+         (slot          . 2)
+         (window-height . 10)
+         (window-width  . 45)
+         (preserve-size . (t . nil))
+         ,sam--parameters)))))
+
+(defun sam-rule-to-eol ()
+  "Return a dashed rule from point to `fill-column'.
+
+Insert it when called interactively."
+  (interactive)
+  (let ((r (make-string (- fill-column (- (point) (point-at-bol))) ?\-)))
+    (if (called-interactively-p 'any)
+        (insert r)
+      r)))
+
+(defun scratch ()
+  (interactive)
+  (switch-to-buffer-other-window
+   (get-buffer-create "*scratch*") t)
+  (emacs-lisp-mode))
+
+
+(defmacro hs--dwim-wrap (what)
+  (let ((show (intern (format "hs-show-%s" what)))
+        (hide (intern (format "hs-hide-%s" what))))
+    `(progn
+       (if (hs-already-hidden-p)
+           (,show)
+         (,hide)))))
+
+(defun hs-dwim-all ()
+  (interactive)
+  (hs--dwim-wrap all))
+
+(defun hs-dwim-block ()
+  (interactive)
+  (hs--dwim-wrap block))
+
+;; stolen and modified from
+;; https://www.reddit.com/r/emacs/comments/d8xw3y/make_qr_codes_from_emacs/
+(defun sam-qr-encode (str &optional buf)
+  "Encode STR as a QR code.
+
+Return a new buffer or BUF with the code in it."
+  (interactive
+   (list
+    (if (region-active-p)
+        (buffer-substring-no-properties
+         (region-beginning)
+         (region-end))
+      (read-string "String to encode: "))))
+  (let ((buffer (get-buffer-create (or buf "*QR Code*")))
+        (format (if (display-graphic-p) "PNG" "UTF8"))
+        (inhibit-read-only t))
+    (with-current-buffer buffer
+      (delete-region (point-min) (point-max)))
+    (make-process
+     :name "qrencode" :buffer buffer
+     :command `("qrencode" ,str "-t" ,format "-o" "-")
+     :coding 'no-conversion
+     ;; seems only the filter function is able to move point to top
+     :filter
+     (lambda (process string)
+       (with-current-buffer (process-buffer process)
+         (insert string)
+         (goto-char (point-min))
+         (set-marker (process-mark process) (point))))
+     :sentinel
+     (lambda (_process change)
+       (when (string= change "finished\n")
+         (with-current-buffer buffer
+           (cond ((string= format "PNG")
+                  (image-mode)
+                  (image-transform-fit-to-height))
+                 (t ;(string= format "UTF8")
+                  (text-mode)
+                  (decode-coding-region (point-min) (point-max) 'utf-8)))))))
+    (when (called-interactively-p 'interactive)
+      (display-buffer buffer))
+    buffer))
+
+(defalias 'previous-match 'previous-error)
+
+(defun indent-width ()
+  "Return character width of indentation for current line."
+  (- (save-excursion (beginning-of-line-text) (point))
+     (point-at-bol)))
+
+(defalias 'ttl #'toggle-truncate-lines)
+(defalias 'truncate-line-toggle #'toggle-truncate-lines)
+
+(defun string-suffix-add (string suffix)
+  "Add SUFFIX to STRING if it does not have it already."
+    (if (string-suffix-p suffix string)
+        string
+      (concat string suffix)))
 
 (provide 'sam-helpers)
 ;;; sam-helpers.el ends here

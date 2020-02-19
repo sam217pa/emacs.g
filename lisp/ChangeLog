@@ -1,0 +1,12 @@
+2019-03-01  Samuel Barreto  <samuel.barreto8@gmail.com>
+
+	* sam-todo.el (sam-add-change-log)
+
+	Separate into two functions, one for
+	opening, the other for inserting a new
+	entry.
+
+	* sam-todo.el (sam-change-log):
+
+	Now open a changelog window in a side
+	window, for easy note taking.

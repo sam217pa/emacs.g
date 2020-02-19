@@ -62,12 +62,36 @@
 
 ## * " (file-name-nondirectory (buffer-file-name)) " ends here.")
 
+ '(("\\.r\\'" . "R spin") ""
+   "#' ---
+#' title: \"" (read-string "Document title: ") "\"
+#' author: \"Samuel Barreto\"
+#' date: \"`r Sys.Date()`\"
+#' output: tint::tintPdf
+#' latexfonts:
+#' - package: mathdesign
+#'   options:
+#'     - bitstream-charter
+#' - package: nimbusmononarrow
+#' ---
+
+#+ knitr, echo=FALSE
+opts_chunk$set(echo=TRUE, prompt=FALSE, comment=NA, message=FALSE,
+               warning=FALSE, global.par = TRUE, fig.path = \"figures/\",
+               fig.width=7, fig.height=5)")
+
  ;; insert header for org mode todos.
  '(("TODO\\'" . "TODO Header") ""
    "# -*- mode: org -*-
 # Time-stamp: <>
-"
-   )) ; sam-autoinsert
+")
+ '(("\\.md\\'" . "Md Header") ""
+   "---
+title: \"" (read-string "Post title: ") "\"
+author: \"" (read-string "Post author: ") "\"
+date: 
+draft: true
+---")) ; sam-autoinsert
 
 ;; enable auto-insert mode
 (auto-insert-mode 1)

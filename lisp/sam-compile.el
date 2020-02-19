@@ -31,8 +31,7 @@
              makefile-gmake-mode
              makefile-pickup-targets)
   :init
-  (add-hook! 'makefile-bsdmake-mode-hook
-    (makefile-gmake-mode))
+  (add-hook 'makefile-bsdmake-mode-hook 'makefile-gmake-mode)
   :config
 
   (defun sam-makefile--search-vars (buf)
@@ -57,7 +56,7 @@
       (let ((vars (sam-makefile--search-vars (current-buffer))))
         (insert ".PHONY: info\ninfo:")
         (cl-loop for var in vars do
-                 (insert (format "\n\t@echo %s: $(%s)" var var)))
+                 (insert (format "\n\t$(info %s: $(%s))" var var)))
         (insert "\n"))))
 
   (defun sam-makefile-document ()
@@ -80,7 +79,11 @@
            (insert (format "\t$(info make %s%s -- )\n"
                            (car x)
                            (make-string (- m (length (car x))) ?\s))))
-         targets)))))
+         targets))))
+
+  (define-after-save-hook-mode sam-auto-make
+    (lambda () (compile "make -k")))
+  )
 
 (use-package compile
   :commands (compile)

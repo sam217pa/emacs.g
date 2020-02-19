@@ -37,12 +37,12 @@
   :version 1.0
   :prefix "sam-")
 
-(defcustom sam-font "DejaVu Sans Mono 11"
+(defcustom sam-font "Inconsolata 12"
   "Font for coding situations."
   :group 'sam
   :type 'string)
 
-(defcustom sam-variable-pitch-font "Input Sans Narrow"
+(defcustom sam-variable-pitch-font "Inconsolata 12"
   "Font for text"
   :group 'sam
   :type 'string)
@@ -136,6 +136,12 @@ When using Homebrew, install it using \"brew install trash\"."
     (add-to-list 'Info-directory-list
                  (expand-file-name "~/.local/share/info")))
 
+  ;; disable warnings when opening file or directory with
+  ;; local variables set
+  (setq-default enable-local-eval t)
+  (setq-default enable-local-variables :safe)
+  (setq-default enable-dir-local-variables t)
+
   (setq
    ;; use-package décrit les appels qu'il fait
    use-package-verbose nil
@@ -202,8 +208,7 @@ When using Homebrew, install it using \"brew install trash\"."
   (setq initial-major-mode 'fundamental-mode)
 
   ;; supprime les caractères en trop en sauvegardant.
-  (add-hook! 'before-save-hook
-    (delete-trailing-whitespace))
+  (add-hook 'before-save-hook 'delete-trailing-whitespace)
 
   ;; rend les scripts executable par défault si c'est un script.
   (add-hook! 'after-save-hook
@@ -213,13 +218,14 @@ When using Homebrew, install it using \"brew install trash\"."
   "Set the default theme and fonts"
   (unless (eq sam-theme 'default)
     (load-theme sam-theme t))
-  (set-face-attribute
-   'variable-pitch
-   nil
-   :family sam-variable-pitch-font
-   :height 140)
+
 
   (when sam-use-variable-pitch-font
+    (set-face-attribute
+     'variable-pitch
+     nil
+     :family sam-variable-pitch-font
+     :height 120)
     (remove-hook 'text-mode-hook
       (variable-pitch-mode 1)))
 
@@ -229,8 +235,8 @@ When using Homebrew, install it using \"brew install trash\"."
 
     ;; change default font for current frame
     (add-to-list 'default-frame-alist `(font . ,sam-font))
-    (add-to-list 'default-frame-alist `(:height . 150))
-    (set-face-attribute 'default nil :font sam-font :height 150)))
+    (add-to-list 'default-frame-alist `(:height . 120))
+    (set-face-attribute 'default nil :font sam-font :height 120)))
 
 (defun sam--initialize-frame! ()
   "Set the default dimension and position of a new frame."
@@ -317,6 +323,12 @@ When using Homebrew, install it using \"brew install trash\"."
            (slot . 1)
            (window-width . fit-window-to-buffer)
            (preserve-size . (t . nil))
+           ,sam--parameters)
+          ("\\*ivy-occur .*\\*" display-buffer-in-side-window
+           (side . top)
+           (slot . 2)
+           (window-height . 10)
+           (preserve-size . (nil . t))
            ,sam--parameters))))
 
 ;;;###autoload
@@ -330,6 +342,7 @@ When using Homebrew, install it using \"brew install trash\"."
   (sam--keyboard!)
   (sam--darwin-defaults!))
 
+;; update the time stamp in the buffer if need be.
 (add-hook 'before-save-hook #'time-stamp)
 
 (defmacro advices-add (symbol &rest args)
@@ -340,28 +353,19 @@ When using Homebrew, install it using \"brew install trash\"."
         (lambda (arg) `(advice-add ,symbol ,@arg))
         args)))
 
-(defun advice-backward-word (&rest funs)
-  "Advice FUNS with `backward-word'."
-  (cl-loop
-   for fun in funs
-   do (advices-add fun
-        (:before #'sam--bwd-advice)
-        (:after  #'sam--fwd-advice))))
-
-(defun sam--bwd-advice (&optional arg)
-  (cond
-   ((looking-at "[[:blank:]]")
-    (backward-word arg))))
-
-(defun sam--fwd-advice (&optional arg)
-  (forward-char))
-
-(advice-backward-word #'capitalize-word #'upcase-word #'downcase-word)
-
+;; quote are better in “ and ” than " and "
 (add-hook 'text-mode-hook #'electric-quote-local-mode)
 
 (add-to-list 'load-path "~/dotfile/emacs/private/cf/")
-(add-to-list 'load-path "~/dotfile/emacs/private/eaf/")
+(add-to-list 'load-path "~/dotfile/emacs/private/eap/")
+(add-to-list 'load-path "~/dotfile/emacs/private/leap/")
+(add-to-list 'load-path "~/dotfile/emacs/private/shelter/")
+(add-to-list 'load-path "~/dotfile/emacs/private/ess-spinr/")
+(add-to-list 'load-path "~/dotfile/emacs/private/outline-sidetoc/")
+
+;; reduce text size in help side-window
+(add-hook! 'help-mode-hook
+  (text-scale-set -3))
 
 (provide 'sam-defaults)
 

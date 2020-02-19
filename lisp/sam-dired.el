@@ -27,8 +27,7 @@
 (require 'sam-utils)
 
 (use-package dired
-  :bind* (("C-x d" . dired-other-window)
-          ("C-x C-'" . dired-side))
+  :bind* (("C-x d" . dired-other-window))
   :defines (ls-lisp-use-insert-directory-program)
   :commands (dired
              dired-view-other-window
@@ -49,7 +48,12 @@
     "Display `default-directory' in side window on left, hiding details."
     (interactive)
     (let ((buffer (dired-noselect default-directory)))
-      (with-current-buffer buffer (dired-hide-details-mode t))
+      (with-current-buffer buffer
+        (dired-hide-details-mode t)
+        (setq-local right-fringe-width 0)
+        (setq-local left-fringe-width 0)
+        (setq-local mode-line-format nil)
+        (text-scale-set -3))
       (sam-side-buffer
        buffer  `((side          . left)
                  (slot          . 4)
@@ -63,7 +67,7 @@
         (setq insert-directory-program gls)))
 
   (setq ls-lisp-use-insert-directory-program t)
-  (setq dired-listing-switches "-alh")
+  (setq dired-listing-switches "-alhXg")
   (setq dired-dwim-target t) ; guess copy target based on other dired window
 
   (defun dired-view-other-window ()
@@ -83,10 +87,69 @@
           (view-file file))
         (other-window -1))))
 
+  (defvar sam-dired--dir-prefix
+    (let ((letters (split-string "abcdefghijklmnopqrstuvwxyz" "" t)))
+      (apply #'append
+             (seq-map (lambda (x) (seq-map (lambda (y) (concat x y)) letters)) letters)))
+    "List of potential prefix used for directory naming.")
+
+  (defun sam-dired--make-dir-prefix ()
+    "Return a prefix of the form aa, ab, ac, ... for creating
+a directory."
+    (let* ((dirs (seq-filter #'file-directory-p (directory-files default-directory)))
+           (prefs (mapcar (lambda (x) (elt (split-string x "_" t) 0)) dirs))
+           (lpref sam-dired--dir-prefix))
+      (elt (seq-difference lpref prefs #'equal) 0)))
+
+  (defun sam-project--make-readme (pname)
+    "Create a template of README file"
+    (with-current-buffer (find-file-noselect "README")
+      (org-mode)
+      (goto-char 1)
+      (insert (format "# %s" "-*- mode: org -*-\n"))
+      (insert (format "#+TITLE: %s \n" pname))
+      (insert "\n\n* Description\n\n")
+      (save-buffer)))
+
+  (defun sam-project--create-dirs (external-data)
+    "Create the directory structure."
+    (cond
+     (external-data
+      (let ((inp (read-file-name "Where is input data stored? "))
+            (oup (read-file-name "Where is output data stored? ")))
+        (make-symbolic-link inp "i")
+        (make-symbolic-link oup "o")))
+     (t
+      (make-directory "i")
+      (make-directory "o")))
+    (mapc #'make-directory '("etc" "scripts" "analysis" ".bkp" ".log"))
+    (when (eq major-mode 'dired-mode)
+      (revert-buffer)))
+
+  (defun sam-project--git-init ()
+    (with-current-buffer (find-file-noselect ".gitignore")
+      (insert
+       (mapconcat #'identity '("etc/" ".bkp/" "i/" "i" "o/" "o" ".log/") "\n"))
+      (save-buffer))
+    (magit-init default-directory)
+    (magit-stage-file "README")
+    (magit-stage-file ".gitignore"))
+
+  (defun sam-make-project (pname external-data)
+    (interactive
+     (list (read-string "Project Name: ")
+           (yes-or-no-p "Is data external? ")))
+    (sam-project--make-readme pname)
+    (sam-project--create-dirs external-data)
+    (sam-project--git-init))
+
   (defun dired-mkdir-date (dir-name)
     "Make a directory with current date style"
     (interactive "sDirectory content: ")
-    (mkdir (format "%s-%s" (format-time-string "%Y-%m-%d" (current-time)) dir-name))
+    (mkdir (format "%s_%s_%s"
+                   (sam-dired--make-dir-prefix)
+                   (replace-regexp-in-string " " "-" dir-name)
+                   (format-time-string "%Y-%m-%d" (current-time))))
     (revert-buffer))
 
   (defun dired-mkdir-date-rstyle (dir-name)
@@ -115,8 +178,7 @@
    ("9"   . dired-mkdir-date-rstyle)
    ("O"   . sam-open-in-external-app)
    ("K"   . sam-dired-rm)
-   ("C-'" . shell)
-   ("q"   . (lambda () (interactive) (quit-window 4)))))
+   ("C-'" . shell)))
 
 (use-package dired-x
   :after dired
@@ -126,7 +188,8 @@
   (add-hook! 'dired-load-hook
     (load "dired-x"))
   (add-hook! 'dired-mode-hook
-    (dired-omit-mode))
+    (dired-omit-mode)
+    (dired-hide-details-mode))
   :config
   (setq dired-omit-verbose nil)
   (setq dired-omit-extensions
@@ -178,6 +241,35 @@ that describes it."
       (dired-do-shell-command
        "rm -f * &" nil (dired-get-marked-files))
       (dired-do-redisplay))))
+
+(use-package dired-toggle
+  :bind* (("<f3>" . #'dired-toggle)
+          ("C-x C-'" . #'dired-toggle))
+  :bind (:map dired-mode-map
+         ("q" . #'dired-toggle-quit)
+         ([remap dired-find-file] . #'dired-toggle-find-file)
+         ([remap dired-up-directory] . #'dired-toggle-up-directory)
+         ("C-c C-u" . #'dired-toggle-up-directory))
+  :config
+  (setq dired-toggle-window-size 32)
+  (setq dired-toggle-window-side 'left)
+
+  ;; Optional, enable =visual-line-mode= for our narrow dired buffer:
+  (add-hook 'dired-toggle-mode-hook
+            (lambda () (interactive)
+              (visual-line-mode 1)
+              (setq-local visual-line-fringe-indicators '(nil right-curly-arrow))
+              (setq-local word-wrap nil))))
+
+(setq dired-garbage-files-regexp
+      (concat (regexp-opt
+               '("aux" "bak" "log" "dvi" "orig" "rej" "toc"
+                 "bbl" "bcf" "blg" "fdb_latexmk" "fls" "out"
+                 "run\.xml"))
+	          "\\'"))
+
+(use-package all-the-icons-dired
+  :hook (dired-mode . all-the-icons-dired-mode))
 
 (provide 'sam-dired)
 ;;; sam-dired.el ends here

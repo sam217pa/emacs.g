@@ -4,39 +4,75 @@
 [submodule "ace-window"]
 	path = lib/ace-window
 	url = git@github.com:abo-abo/ace-window.git
+[submodule "adoc-mode"]
+	path = lib/adoc-mode
+	url = git@github.com:sensorflo/adoc-mode.git
+[submodule "all-the-icons"]
+	path = lib/all-the-icons
+	url = git@github.com:domtronn/all-the-icons.el.git
+[submodule "all-the-icons-dired"]
+	path = lib/all-the-icons-dired
+	url = git@github.com:jtbm37/all-the-icons-dired.git
+[submodule "asciidoc"]
+	path = lib/asciidoc
+	url = git@github.com:metaperl/asciidoc-el.git
 [submodule "async"]
 	path = lib/async
 	url = git@github.com:jwiegley/emacs-async.git
 [submodule "auctex"]
 	path = lib/auctex
 	url = https://git.savannah.gnu.org/git/auctex.git
+[submodule "auctex-latexmk"]
+	path = lib/auctex-latexmk
+	url = git@github.com:tom-tan/auctex-latexmk.git
 [submodule "auto-compile"]
 	path = lib/auto-compile
 	url = git@github.com:emacscollective/auto-compile.git
 [submodule "avy"]
 	path = lib/avy
 	url = git@github.com:abo-abo/avy.git
+[submodule "aweshell"]
+	path = lib/aweshell
+	url = https://github.com/manateelazycat/aweshell
 [submodule "biblio"]
 	path = lib/biblio
 	url = git@github.com:cpitclaudel/biblio.el.git
+[submodule "bibtex-utils"]
+	path = lib/bibtex-utils
+	url = git@github.com:plantarum/bibtex-utils.git
 [submodule "bicycle"]
 	path = lib/bicycle
 	url = git@github.com:tarsius/bicycle.git
 [submodule "borg"]
 	path = lib/borg
 	url = git@github.com:emacscollective/borg.git
+[submodule "cdlatex"]
+	path = lib/cdlatex
+	url = git@github.com:cdominik/cdlatex.git
+[submodule "centered-window"]
+	path = lib/centered-window
+	url = git@github.com:anler/centered-window-mode.git
 [submodule "closql"]
 	path = lib/closql
 	url = git@github.com:emacscollective/closql.git
+[submodule "coffee-mode"]
+	path = lib/coffee-mode
+	url = git@github.com:defunkt/coffee-mode.git
 [submodule "comment-dwim-2"]
 	path = lib/comment-dwim-2
 	url = git@github.com:remyferre/comment-dwim-2.git
 [submodule "commenter"]
 	path = lib/commenter
 	url = git@github.com:yuutayamada/commenter.git
+[submodule "company"]
+	path = lib/company
+	url = git@github.com:company-mode/company-mode.git
 [submodule "ctable"]
 	path = lib/ctable
 	url = git@github.com:kiwanami/emacs-ctable.git
+[submodule "ctags-update"]
+	path = lib/ctags-update
+	url = git@github.com:jixiuf/ctags-update.git
 [submodule "cwl-mode"]
 	path = lib/cwl-mode
 	url = git@github.com:tom-tan/cwl-mode.git
@@ -44,12 +80,33 @@
 	path = lib/dash
 	url = git@github.com:magnars/dash.el.git
 	no-makeinfo = dash-template.texi
+[submodule "deadgrep"]
+	path = lib/deadgrep
+	url = git@github.com:Wilfred/deadgrep.git
 [submodule "deferred"]
 	path = lib/deferred
 	url = git@github.com:kiwanami/emacs-deferred.git
+[submodule "deft"]
+	path = lib/deft
+	url = git@github.com:jrblevin/deft.git
 [submodule "diff-hl"]
 	path = lib/diff-hl
 	url = git@github.com:dgutov/diff-hl.git
+[submodule "dired-toggle"]
+	path = lib/dired-toggle
+	url = git@github.com:fasheng/dired-toggle.git
+[submodule "doom-themes"]
+	path = lib/doom-themes
+	url = git@github.com:hlissner/emacs-doom-themes.git
+[submodule "ebib"]
+	path = lib/ebib
+	url = git@github.com:joostkremers/ebib.git
+[submodule "ediprolog"]
+	path = lib/ediprolog
+	url = git@github.com:emacsmirror/ediprolog.git
+[submodule "eglot"]
+	path = lib/eglot
+	url = git@github.com:joaotavora/eglot.git
 [submodule "eldoc-eval"]
 	path = lib/eldoc-eval
 	url = git@github.com:thierryvolpiatto/eldoc-eval.git
@@ -59,6 +116,9 @@
 [submodule "elfeed-org"]
 	path = lib/elfeed-org
 	url = git@github.com:remyhonig/elfeed-org.git
+[submodule "elpy"]
+	path = lib/elpy
+	url = git@github.com:jorgenschaefer/elpy.git
 [submodule "emacsql"]
 	path = lib/emacsql
 	url = git@github.com:skeeto/emacsql.git
@@ -75,6 +135,9 @@
 [submodule "esxml"]
 	path = lib/esxml
 	url = git@github.com:tali713/esxml.git
+[submodule "evil"]
+	path = lib/evil
+	url = git@github.com:emacs-evil/evil.git
 [submodule "exec-path-from-shell"]
 	path = lib/exec-path-from-shell
 	url = git@github.com:purcell/exec-path-from-shell.git
@@ -84,12 +147,21 @@
 [submodule "f"]
 	path = lib/f
 	url = git@github.com:rejeep/f.el.git
+[submodule "fasd"]
+	path = lib/fasd
+	url = https://framagit.org/steckerhalter/emacs-fasd.git
 [submodule "fennel-mode"]
 	path = lib/fennel-mode
 	url = git@gitlab.com:technomancy/fennel-mode.git
-[submodule "geiser"]
-	path = lib/geiser
-	url = git@gitlab.com:jaor/geiser.git
+[submodule "flex-isearch"]
+	path = lib/flex-isearch
+	url = git@github.com:emacsmirror/flex-isearch.git
+[submodule "frog-menu"]
+	path = lib/frog-menu
+	url = https://github.com/clemera/frog-menu
+[submodule "general"]
+	path = lib/general
+	url = git@github.com:noctuid/general.el.git
 [submodule "ggo-mode"]
 	path = lib/ggo-mode
 	url = git@github.com:mkjunker/ggo-mode.git
@@ -102,33 +174,57 @@
 [submodule "git-modes"]
 	path = lib/git-modes
 	url = git@github.com:magit/git-modes.git
+[submodule "github-modern-theme"]
+	path = lib/github-modern-theme
+	url = git@github.com:philiparvidsson/GitHub-Modern-Theme-For-Emacs.git
 [submodule "grab-mac-link"]
 	path = lib/grab-mac-link
 	url = git@github.com:xuchunyang/grab-mac-link.el.git
+[submodule "graphviz-dot-mode"]
+	path = lib/graphviz-dot-mode
+	url = git@github.com:ppareit/graphviz-dot-mode.git
+[submodule "helm"]
+	path = lib/helm
+	url = git@github.com:emacs-helm/helm.git
 [submodule "helm-bibtex"]
 	path = lib/helm-bibtex
 	url = git@github.com:tmalsburg/helm-bibtex.git
+[submodule "hercules"]
+	path = lib/hercules
+	url = https://gitlab.com/jjzmajic/hercules.el
 [submodule "hierarchy"]
 	path = lib/hierarchy
 	url = git@github.com:DamienCassou/hierarchy.git
+[submodule "highlight-indentation"]
+	path = lib/highlight-indentation
+	url = git@github.com:antonj/Highlight-Indentation-for-Emacs.git
 [submodule "hl-todo"]
 	path = lib/hl-todo
 	url = git@github.com:tarsius/hl-todo.git
+[submodule "ht"]
+	path = lib/ht
+	url = git@github.com:Wilfred/ht.el.git
 [submodule "hungry-delete"]
 	path = lib/hungry-delete
 	url = git@github.com:nflath/hungry-delete.git
-[submodule "hy-mode"]
-	path = lib/hy-mode
-	url = git@github.com:hylang/hy-mode.git
 [submodule "hydra"]
 	path = lib/hydra
 	url = git@github.com:abo-abo/hydra.git
+[submodule "hyperbole"]
+	path = lib/hyperbole
+	url = https://git.savannah.gnu.org/git/hyperbole.git
 [submodule "hyperspec"]
 	path = lib/hyperspec
 	url = git@github.com:emacsorphanage/hyperspec.git
 [submodule "iedit"]
 	path = lib/iedit
 	url = git@github.com:victorhge/iedit.git
+[submodule "indent-guide"]
+	path = lib/indent-guide
+	url = git@github.com:zk-phi/indent-guide.git
+[submodule "interleave"]
+	path = lib/interleave
+	url = git@github.com:rudolfochrist/interleave.git
 [submodule "ivy"]
 	path = lib/ivy
 	url = git@github.com:abo-abo/swiper.git
@@ -144,6 +240,12 @@
 [submodule "json-snatcher"]
 	path = lib/json-snatcher
 	url = git@github.com:Sterlingg/json-snatcher.git
+[submodule "jsonrpc"]
+	path = lib/jsonrpc
+	url = git@github.com:emacsmirror/jsonrpc.git
+[submodule "justify-kp"]
+	path = lib/justify-kp
+	url = https://github.com/Fuco1/justify-kp
 [submodule "key-chord"]
 	path = lib/key-chord
 	url = git@github.com:emacsorphanage/key-chord.git
@@ -179,6 +281,9 @@
 [submodule "markdown-mode"]
 	path = lib/markdown-mode
 	url = git@github.com:jrblevin/markdown-mode.git
+[submodule "markup-faces"]
+	path = lib/markup-faces
+	url = git@github.com:sensorflo/markup-faces.git
 [submodule "memoize"]
 	path = lib/memoize
 	url = git@github.com:skeeto/emacs-memoize.git
@@ -194,12 +299,18 @@
 [submodule "mwim"]
 	path = lib/mwim
 	url = git@github.com:alezost/mwim.el.git
-[submodule "navi-mode"]
-	path = lib/navi-mode
-	url = git@github.com:alphapapa/navi.git
+[submodule "nim-mode"]
+	path = lib/nim-mode
+	url = git@github.com:nim-lang/nim-mode.git
 [submodule "no-littering"]
 	path = lib/no-littering
 	url = git@github.com:emacscollective/no-littering.git
+[submodule "nov"]
+	path = lib/nov
+	url = git@github.com:wasamasa/nov.el.git
+[submodule "omn-mode"]
+	path = lib/omn-mode
+	url = git@github.com:emacsmirror/omn-mode.git
 [submodule "org"]
 	path = lib/org
 	url = git@code.orgmode.org:bzg/org-mode.git
@@ -209,15 +320,33 @@
 [submodule "org-download"]
 	path = lib/org-download
 	url = git@github.com:abo-abo/org-download.git
+[submodule "org-graph-view"]
+	path = lib/org-graph-view
+	url = https://github.com/alphapapa/org-graph-view
+[submodule "org-journal"]
+	path = lib/org-journal
+	url = git@github.com:bastibe/org-journal.git
+[submodule "org-mind-map"]
+	path = lib/org-mind-map
+	url = git@github.com:theodorewiles/org-mind-map.git
+[submodule "org-opml"]
+	path = lib/org-opml
+	url = https://github.com/org-opml/org-opml
+[submodule "org-roam"]
+	path = lib/org-roam
+	url = https://github.com/jethrokuan/org-roam
 [submodule "org-web-tools"]
 	path = lib/org-web-tools
 	url = git@github.com:alphapapa/org-web-tools.git
-[submodule "outorg"]
-	path = lib/outorg
-	url = git@github.com:alphapapa/outorg.git
-[submodule "outshine"]
-	path = lib/outshine
-	url = git@github.com:alphapapa/outshine.git
+[submodule "org-wiki"]
+	path = lib/org-wiki
+	url = https://github.com/caiorss/org-wiki
+[submodule "ox-gfm"]
+	path = lib/ox-gfm
+	url = git@github.com:larstvei/ox-gfm.git
+[submodule "ox-pandoc"]
+	path = lib/ox-pandoc
+	url = git@github.com:kawabata/ox-pandoc.git
 [submodule "packed"]
 	path = lib/packed
 	url = git@github.com:emacscollective/packed.git
@@ -227,9 +356,27 @@
 [submodule "pcre2el"]
 	path = lib/pcre2el
 	url = git@github.com:joddie/pcre2el.git
+[submodule "pdf-tools"]
+	path = lib/pdf-tools
+	url = git@github.com:politza/pdf-tools.git
+[submodule "plain-org-wiki"]
+	path = lib/plain-org-wiki
+	url = git@github.com:abo-abo/plain-org-wiki.git
+[submodule "poet-theme"]
+	path = lib/poet-theme
+	url = git@github.com:kunalb/poet.git
 [submodule "poporg"]
 	path = lib/poporg
 	url = git@github.com:QBobWatson/poporg.git
+[submodule "posframe"]
+	path = lib/posframe
+	url = git@github.com:tumashu/posframe.git
+[submodule "powerline"]
+	path = lib/powerline
+	url = git@github.com:milkypostman/powerline.git
+[submodule "pyvenv"]
+	path = lib/pyvenv
+	url = git@github.com:jorgenschaefer/pyvenv.git
 [submodule "rainbow-delimiters"]
 	path = lib/rainbow-delimiters
 	url = git@github.com:Fanael/rainbow-delimiters.git
@@ -248,18 +395,48 @@
 [submodule "slime"]
 	path = lib/slime
 	url = git@github.com:slime/slime.git
+[submodule "smart-dash"]
+	path = lib/smart-dash
+	url = git@github.com:emacsmirror/smart-dash.git
 [submodule "smartparens"]
 	path = lib/smartparens
 	url = git@github.com:Fuco1/smartparens.git
 [submodule "smex"]
 	path = lib/smex
 	url = git@github.com:nonsequitur/smex.git
+[submodule "snakemake-mode"]
+	path = lib/snakemake-mode
+	url = git@github.com:kyleam/snakemake-mode.git
 [submodule "solarized-theme"]
 	path = lib/solarized-theme
 	url = git@github.com:bbatsov/solarized-emacs.git
+[submodule "spaceline"]
+	path = lib/spaceline
+	url = git@github.com:TheBB/spaceline.git
+[submodule "spacemacs-theme"]
+	path = lib/spacemacs-theme
+	url = git@github.com:nashamri/spacemacs-theme.git
+[submodule "sparql-mode"]
+	path = lib/sparql-mode
+	url = git@github.com:ljos/sparql-mode.git
+[submodule "spinner"]
+	path = lib/spinner
+	url = git@github.com:Malabarba/spinner.el.git
 [submodule "spotlight"]
 	path = lib/spotlight
 	url = git@github.com:benmaughan/spotlight.el.git
+[submodule "symbol-overlay"]
+	path = lib/symbol-overlay
+	url = git@github.com:wolray/symbol-overlay.git
+[submodule "tablist"]
+	path = lib/tablist
+	url = git@github.com:politza/tablist.git
+[submodule "transient"]
+	path = lib/transient
+	url = https://github.com/magit/transient
+[submodule "ttl-mode"]
+	path = lib/ttl-mode
+	url = git@github.com:emacsmirror/ttl-mode.git
 [submodule "undo-tree"]
 	path = lib/undo-tree
 	url = git@github.com:emacsorphanage/undo-tree.git
@@ -269,6 +446,12 @@
 [submodule "visual-fill-column"]
 	path = lib/visual-fill-column
 	url = git@github.com:joostkremers/visual-fill-column.git
+[submodule "vterm"]
+	path = lib/vterm
+	url = https://github.com/akermu/emacs-libvterm
+[submodule "vterm-toggle"]
+	path = lib/vterm-toggle
+	url = https://github.com/jixiuf/vterm-toggle
 [submodule "wgrep"]
 	path = lib/wgrep
 	url = git@github.com:mhayashi1120/Emacs-wgrep.git
@@ -296,3 +479,6 @@
 [submodule "zenburn-theme"]
 	path = lib/zenburn-theme
 	url = git@github.com:bbatsov/zenburn-emacs.git
+[submodule "zerodark-theme"]
+	path = lib/zerodark-theme
+	url = git@github.com:NicolasPetton/zerodark-theme.git

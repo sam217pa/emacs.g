@@ -56,7 +56,10 @@ See also `sam-use-theme'."
 
 (sam-use-themes
   solarized "~/.emacs.d/lib/solarized-theme/"
-  zenburn-theme nil)
+  zenburn-theme nil
+  poet "~/.emacs.d/lib/poet-theme"
+  spacemacs-theme "~/.emacs.d/lib/spacemacs-theme/"
+  doom-theme "~/.emacs.d/lib/doom-themes/themes/")
 
 
 (use-package minions
